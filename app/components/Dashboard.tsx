@@ -581,6 +581,99 @@ function NewsSection() {
 }
 
 // ──────────────────────────────────────────────
+// 네이버 쇼핑 캐러셀
+// ──────────────────────────────────────────────
+interface ShoppingItem { title: string; link: string; image: string; lprice: number; mallName: string; }
+
+function ShoppingCarousel({ query, label }: { query: string; label: string }) {
+  const [items, setItems] = useState<ShoppingItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [noKey, setNoKey] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/shopping?query=${encodeURIComponent(query)}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.error === 'naver_key_missing') { setNoKey(true); }
+        else { setItems(d.items ?? []); }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [query]);
+
+  return (
+    <div className="mb-6">
+      <p className="text-xs font-semibold text-black/35 tracking-widest uppercase mb-3">{label}</p>
+
+      {loading && (
+        <div className="flex gap-3 overflow-hidden">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="w-40 shrink-0 rounded-xl border border-black/6 bg-black/[0.02] h-52 animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {!loading && noKey && (
+        <p className="text-xs text-black/30 py-4">네이버 API 키가 설정되지 않았습니다.</p>
+      )}
+
+      {!loading && !noKey && items.length === 0 && (
+        <p className="text-xs text-black/30 py-4">상품을 가져오지 못했습니다.</p>
+      )}
+
+      {!loading && !noKey && items.length > 0 && (
+        <div
+          className="flex gap-3 overflow-x-auto pb-2"
+          style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
+        >
+          {items.map((item, i) => (
+            <a
+              key={i}
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-40 shrink-0 flex flex-col rounded-xl border border-black/8 overflow-hidden hover:border-black/20 transition-all group"
+              style={{ scrollSnapAlign: 'start' }}
+            >
+              {/* 상품 이미지 */}
+              <div className="w-full h-36 bg-black/[0.03] overflow-hidden">
+                {item.image
+                  ? <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  : <div className="w-full h-full flex items-center justify-center text-black/15 text-xs">이미지 없음</div>
+                }
+              </div>
+              {/* 정보 */}
+              <div className="px-3 py-2.5 flex flex-col gap-1 flex-1">
+                <p className="text-xs font-medium text-black/75 leading-snug line-clamp-2">{item.title}</p>
+                <p className="text-xs text-black/30 mt-auto">{item.mallName}</p>
+                <p className="text-sm font-bold text-black">
+                  {item.lprice > 0 ? `₩${item.lprice.toLocaleString('ko-KR')}` : '가격 미정'}
+                </p>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ShoppingSection() {
+  return (
+    <section>
+      <div className="flex items-center gap-3 mb-5">
+        <h2 className="text-sm font-semibold tracking-widest text-black/40 uppercase">네이버 쇼핑</h2>
+        <div className="flex-1 h-px bg-black/6" />
+        <span className="text-xs text-black/25">인기순 · 네이버 쇼핑 기준</span>
+      </div>
+      <ShoppingCarousel query="구스이불" label="구스이불" />
+      <ShoppingCarousel query="구스베개" label="구스베개" />
+      <p className="text-xs text-black/25 mt-1">출처: 네이버 쇼핑 검색 API</p>
+    </section>
+  );
+}
+
+// ──────────────────────────────────────────────
 // 메인 대시보드
 // ──────────────────────────────────────────────
 export default function Dashboard({ data }: { data: AggregatedData }) {
@@ -729,6 +822,9 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
         {/* 해외 뉴스 */}
         <NewsSection />
+
+        {/* 네이버 쇼핑 */}
+        <ShoppingSection />
 
         {/* 주의사항 */}
         <section className="text-xs text-black/20 space-y-1 pb-4 border-t border-black/5 pt-6">
