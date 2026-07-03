@@ -18,6 +18,16 @@ const KEY_BORDER = 'rgba(170,142,92,0.3)';
 const SETTINGS_KEY = 'goose-settings';
 const PAGE_SIZE    = 10;
 
+const NAV_SECTIONS = [
+  { id: 'sec-fx',       label: '환율' },
+  { id: 'sec-goose',    label: '거위털' },
+  { id: 'sec-duck',     label: '오리털' },
+  { id: 'sec-customs',  label: '수입통계' },
+  { id: 'sec-news-kr',  label: '국내뉴스' },
+  { id: 'sec-news',     label: '해외뉴스' },
+  { id: 'sec-shopping', label: '쇼핑트렌드' },
+];
+
 // ──────────────────────────────────────────────
 // 통화
 // ──────────────────────────────────────────────
@@ -785,8 +795,9 @@ function ShoppingSection() {
 // ──────────────────────────────────────────────
 export default function Dashboard({ data }: { data: AggregatedData }) {
   const router = useRouter();
-  const [currency, setCurrency]     = useState<Currency>('KRW');
+  const [currency, setCurrency]       = useState<Currency>('KRW');
   const [showFeedback, setShowFeedback] = useState(false);
+  const [activeSection, setActiveSection] = useState('sec-fx');
 
   useEffect(() => {
     try {
@@ -794,6 +805,32 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
       if (s.currency) setCurrency(s.currency);
     } catch {}
   }, []);
+
+  // 현재 보이는 섹션 추적
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        // 뷰포트 안에 들어온 섹션 중 가장 위쪽 것을 active로
+        const visible = entries.filter(e => e.isIntersecting).sort(
+          (a, b) => a.boundingClientRect.top - b.boundingClientRect.top
+        );
+        if (visible.length > 0) setActiveSection(visible[0].target.id);
+      },
+      { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+    );
+    NAV_SECTIONS.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  function scrollTo(id: string) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 100;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }
 
   function save(c: Currency) {
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ currency: c })); } catch {}
@@ -813,9 +850,10 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
 
       {/* 헤더 */}
-      <header className="border-b border-black/6 px-4 sm:px-6 py-4 sticky top-0 bg-white/95 backdrop-blur-sm z-10">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
-          <h1 className="text-base sm:text-lg font-bold text-black tracking-tight">구초뉴스</h1>
+      <header className="border-b border-black/6 px-4 sm:px-6 sticky top-0 bg-white/95 backdrop-blur-sm z-10">
+        {/* 1행: 로고 + 버튼 */}
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 py-3">
+          <h1 className="text-base sm:text-lg font-bold text-black tracking-tight shrink-0">구초뉴스</h1>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               onClick={() => setShowFeedback(true)}
@@ -832,12 +870,33 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
             </button>
           </div>
         </div>
+        {/* 2행: 섹션 네비게이션 */}
+        <div className="max-w-5xl mx-auto -mx-4 sm:-mx-6 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          <nav className="flex items-center gap-1 px-4 sm:px-6 pb-2.5">
+            {NAV_SECTIONS.map(({ id, label }) => {
+              const isActive = activeSection === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => scrollTo(id)}
+                  className="shrink-0 text-xs font-semibold px-3 py-1 rounded-full transition-all whitespace-nowrap"
+                  style={isActive
+                    ? { backgroundColor: KEY, color: '#fff' }
+                    : { color: 'rgba(0,0,0,0.35)', backgroundColor: 'transparent' }
+                  }
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 sm:space-y-10">
 
         {/* 환율 + 통화 토글 */}
-        <section className="border border-black/6 rounded-2xl px-5 py-4 space-y-4">
+        <section id="sec-fx" className="border border-black/6 rounded-2xl px-5 py-4 space-y-4">
           <FxBar fx={fx} />
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-black/30 font-medium mr-1">통화</span>
@@ -858,7 +917,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
         </section>
 
         {/* 거위털 */}
-        <section>
+        <section id="sec-goose">
           <SectionLabel title="거위털 — Goose Down" sub={`CFD 중국우모협회 · 마지막 업데이트 ${cfd.updatedAt}`} />
           <div className="space-y-4">
             <CfdBarChart categories={goose} currency={currency} fx={fx} label="거위털" />
@@ -869,7 +928,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
         </section>
 
         {/* 오리털 */}
-        <section>
+        <section id="sec-duck">
           <SectionLabel title="오리털 — Duck Down" sub={`CFD 중국우모협회 · 마지막 업데이트 ${cfd.updatedAt}`} />
           <div className="space-y-4">
             <CfdBarChart categories={duck} currency={currency} fx={fx} label="오리털" />
@@ -880,7 +939,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
         </section>
 
         {/* 관세청 수입 통계 */}
-        <section>
+        <section id="sec-customs">
           <SectionLabel title="한국 수입 통계 — 관세청" sub="월별 집계 · 매월 15일경 업데이트" />
 
           {!customs && (
@@ -925,13 +984,13 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
         </section>
 
         {/* 국내 뉴스 */}
-        <KrNewsSection />
+        <div id="sec-news-kr"><KrNewsSection /></div>
 
         {/* 해외 뉴스 */}
-        <NewsSection />
+        <div id="sec-news"><NewsSection /></div>
 
         {/* 네이버 쇼핑 */}
-        <ShoppingSection />
+        <div id="sec-shopping"><ShoppingSection /></div>
 
         {/* 주의사항 */}
         <section className="text-xs text-black/20 space-y-1 pb-4 border-t border-black/5 pt-6">
