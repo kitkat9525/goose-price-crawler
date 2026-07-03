@@ -20,8 +20,8 @@ const PAGE_SIZE    = 10;
 
 const NAV_SECTIONS = [
   { id: 'sec-fx',       label: '환율' },
-  { id: 'sec-goose',    label: '거위털' },
-  { id: 'sec-duck',     label: '오리털' },
+  { id: 'sec-goose',    label: '구스다운' },
+  { id: 'sec-duck',     label: '덕다운' },
   { id: 'sec-customs',  label: '수입통계' },
   { id: 'sec-news-kr',  label: '국내뉴스' },
   { id: 'sec-news',     label: '해외뉴스' },
