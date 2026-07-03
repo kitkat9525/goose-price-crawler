@@ -345,16 +345,18 @@ function CfdBarChart({ categories, currency, fx, label }: {
 // ──────────────────────────────────────────────
 // 관세청 월별 추이 차트
 // ──────────────────────────────────────────────
-function CustomsLineChart({ months, currency, fxKrw, fxUsd }: {
-  months: CustomsMonthData[]; currency: Currency; fxKrw: number; fxUsd: number;
+function CustomsLineChart({ months, currency, fxKrw, fxUsd, fxEur }: {
+  months: CustomsMonthData[]; currency: Currency; fxKrw: number; fxUsd: number; fxEur: number;
 }) {
   const sym = CURRENCY_SYMBOLS[currency];
   const unitLabel = currency === 'KRW' ? '₩/kg' : `${sym}/kg`;
 
+  // 관세청 단가는 USD/kg 기준 → 각 통화로 변환
+  // KRW/USD = fx.KRW / fx.USD (교차환율), EUR/USD = fx.EUR / fx.USD
   const toDisplay = (usdPerKg: number): number => {
-    if (currency === 'KRW') return parseFloat((usdPerKg * fxKrw).toFixed(0));
+    if (currency === 'KRW') return parseFloat((usdPerKg * (fxKrw / fxUsd)).toFixed(0));
     if (currency === 'CNY') return parseFloat((usdPerKg / fxUsd).toFixed(2));
-    if (currency === 'EUR') return parseFloat((usdPerKg * 0.93).toFixed(2));
+    if (currency === 'EUR') return parseFloat((usdPerKg * (fxEur / fxUsd)).toFixed(2));
     return parseFloat(usdPerKg.toFixed(2));
   };
 
@@ -414,7 +416,7 @@ function CustomsLineChart({ months, currency, fxKrw, fxUsd }: {
 // ──────────────────────────────────────────────
 // 관세청 수입 통계 테이블
 // ──────────────────────────────────────────────
-function CustomsTable({ months, fxKrw }: { months: CustomsMonthData[]; fxKrw: number }) {
+function CustomsTable({ months, fxKrw, fxUsd }: { months: CustomsMonthData[]; fxKrw: number; fxUsd: number }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm min-w-[320px]">
@@ -437,7 +439,7 @@ function CustomsTable({ months, fxKrw }: { months: CustomsMonthData[]; fxKrw: nu
               <td className="py-3 px-3 sm:px-4 text-right text-black/50 text-xs sm:text-sm hidden sm:table-cell">${fmtNum(m.importValue, 0)}</td>
               <td className="py-3 px-3 sm:px-4 text-right font-bold text-black text-xs sm:text-sm">${fmtNum(m.unitPrice, 2)}/kg</td>
               <td className="py-3 px-3 sm:px-4 text-right text-black/40 text-xs sm:text-sm hidden sm:table-cell">
-                ₩{Math.round(m.unitPrice * fxKrw).toLocaleString('ko-KR')}/kg
+                ₩{Math.round(m.unitPrice * (fxKrw / fxUsd)).toLocaleString('ko-KR')}/kg
               </td>
             </tr>
           ))}
@@ -704,7 +706,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
           {customs?.source === 'live' && customs.months.length > 0 && (
             <div className="space-y-4">
-              <CustomsLineChart months={customs.months} currency={currency} fxKrw={fx.KRW} fxUsd={fx.USD} />
+              <CustomsLineChart months={customs.months} currency={currency} fxKrw={fx.KRW} fxUsd={fx.USD} fxEur={fx.EUR} />
               <div className="border border-black/6 rounded-2xl overflow-hidden">
                 <div className="px-5 py-3 border-b border-black/5 bg-black/[0.02] flex items-start gap-2">
                   <span className="text-black/30 mt-0.5 text-xs">※</span>
@@ -713,7 +715,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
                     <p className="text-xs text-black/35 mt-0.5">{CUSTOMS_HS_NOTE}</p>
                   </div>
                 </div>
-                <CustomsTable months={customs.months} fxKrw={fx.KRW} />
+                <CustomsTable months={customs.months} fxKrw={fx.KRW} fxUsd={fx.USD} />
                 <div className="px-5 py-2.5 border-t border-black/5 bg-black/[0.015] flex items-center justify-between">
                   <p className="text-xs text-black/25">출처: 관세청 수출입통계 (data.go.kr)</p>
                 </div>
