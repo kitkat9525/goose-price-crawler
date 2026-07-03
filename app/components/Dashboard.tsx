@@ -685,9 +685,8 @@ function ShoppingCarousel({ query, label }: { query: string; label: string }) {
           {/* 왼쪽 화살표 — 캐러셀 바깥 */}
           <button
             onClick={() => scroll('left')}
-            disabled={!canScrollLeft}
-            className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 active:scale-95 disabled:opacity-0 disabled:pointer-events-none"
-            style={{ background: KEY, color: '#fff', border: `1.5px solid ${KEY_BORDER}` }}
+            className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 active:scale-95"
+            style={{ background: KEY, color: '#fff', border: `1.5px solid ${KEY_BORDER}`, opacity: canScrollLeft ? 1 : 0.35 }}
             aria-label="이전"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
