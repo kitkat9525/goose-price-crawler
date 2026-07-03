@@ -801,6 +801,7 @@ function ShoppingSection() {
       </div>
       <ShoppingCarousel query="구스이불" label="구스이불" />
       <ShoppingCarousel query="구스베개" label="구스베개" />
+      <ShoppingCarousel query="구스토퍼" label="구스토퍼" />
       <p className="text-xs text-black/25 mt-1">출처: 네이버 쇼핑 검색 API</p>
     </section>
   );
