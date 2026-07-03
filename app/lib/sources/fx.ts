@@ -3,6 +3,7 @@
 
 export interface FxRates {
   fetchedAt: string;
+  lastUpdatedUtc: string; // API 원본 마지막 갱신 시각
   source: 'live' | 'fallback';
   // 1 CNY 당 환율
   USD: number;
@@ -13,6 +14,7 @@ export interface FxRates {
 // 폴백: 수동 확인 기준값 (실시간 조회 실패 시)
 const FALLBACK: FxRates = {
   fetchedAt: '',
+  lastUpdatedUtc: '',
   source: 'fallback',
   USD: 0.1388,  // 1 CNY ≈ $0.1388
   KRW: 190.5,   // 1 CNY ≈ ₩190.5
@@ -31,6 +33,7 @@ export async function fetchFxRates(): Promise<FxRates> {
 
     return {
       fetchedAt: new Date().toISOString(),
+      lastUpdatedUtc: json.time_last_update_utc ?? '',
       source: 'live',
       USD: json.rates.USD,
       KRW: json.rates.KRW,

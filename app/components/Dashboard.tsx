@@ -220,6 +220,20 @@ function FxBar({ fx }: { fx: FxRates }) {
   const krw = fx.KRW / fx.USD;
   const eur = fx.EUR / fx.USD;
 
+  // API 마지막 갱신 시각 포맷 (예: "Thu, 03 Jul 2026 00:02 UTC")
+  const lastUpdated = fx.lastUpdatedUtc
+    ? (() => {
+        try {
+          const d = new Date(fx.lastUpdatedUtc);
+          return d.toLocaleString('ko-KR', {
+            timeZone: 'Asia/Seoul',
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit',
+          }) + ' KST';
+        } catch { return fx.lastUpdatedUtc; }
+      })()
+    : null;
+
   return (
     <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-x-6 gap-y-2">
       <span className="text-xs text-black/35 font-medium tracking-wide">$1 USD =</span>
@@ -228,7 +242,9 @@ function FxBar({ fx }: { fx: FxRates }) {
         <span className="text-sm font-semibold text-black">₩{fmtNum(krw, 0)} <span className="text-xs text-black/30 font-normal">KRW</span></span>
         <span className="text-sm font-semibold text-black">€{fmtNum(eur, 4)} <span className="text-xs text-black/30 font-normal">EUR</span></span>
       </div>
-      <StatusBadge source={fx.source} />
+      {lastUpdated && (
+        <span className="text-xs text-black/30">기준 {lastUpdated}</span>
+      )}
     </div>
   );
 }
