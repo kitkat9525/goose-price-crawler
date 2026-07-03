@@ -22,7 +22,7 @@ const FALLBACK: FxRates = {
 export async function fetchFxRates(): Promise<FxRates> {
   try {
     const res = await fetch('https://open.er-api.com/v6/latest/CNY', {
-      next: { revalidate: 3600 }, // 1시간마다 갱신
+      cache: 'no-store',
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
