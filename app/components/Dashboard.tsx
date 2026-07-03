@@ -1056,7 +1056,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
             <a href="https://www.data.go.kr/data/15101609/openapi.do" target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors">관세청 공공데이터</a>
             <a href="https://open.er-api.com" target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors">환율 API</a>
           </div>
-          <p>거위털 국제 원료 시세 · 참고용 · © 2026</p>
+          <p>영이만을 위한 공간 · © 2026</p>
         </div>
       </footer>
     </div>
