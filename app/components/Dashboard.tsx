@@ -871,8 +871,8 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           </div>
         </div>
         {/* 2행: 섹션 네비게이션 */}
-        <div className="max-w-5xl mx-auto -mx-4 sm:-mx-6 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-          <nav className="flex items-center justify-center gap-1 px-4 sm:px-6 pb-2.5">
+        <div className="overflow-x-auto border-t border-black/5" style={{ scrollbarWidth: 'none' }}>
+          <nav className="flex items-center gap-1 px-4 pb-2.5 pt-2" style={{ width: 'fit-content', margin: '0 auto' }}>
             {NAV_SECTIONS.map(({ id, label }) => {
               const isActive = activeSection === id;
               return (
