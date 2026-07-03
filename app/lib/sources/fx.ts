@@ -20,21 +20,30 @@ const FALLBACK: FxRates = {
 };
 
 export async function fetchFxRates(): Promise<FxRates> {
+  const apiKey = process.env.EXCHANGERATE_API_KEY;
+
+  // API 키 없으면 open.er-api.com (키 불필요 무료 엔드포인트) 사용
+  const url = apiKey
+    ? `https://v6.exchangerate-api.com/v6/${apiKey}/latest/CNY`
+    : 'https://open.er-api.com/v6/latest/CNY';
+
   try {
-    const res = await fetch('https://open.er-api.com/v6/latest/CNY', {
-      cache: 'no-store',
-    });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const json = await res.json();
     if (json.result !== 'success') throw new Error('API 오류');
 
+    // v6.exchangerate-api.com → conversion_rates
+    // open.er-api.com        → rates
+    const r = json.conversion_rates ?? json.rates;
+
     return {
       fetchedAt: new Date().toISOString(),
       source: 'live',
-      USD: json.rates.USD,
-      KRW: json.rates.KRW,
-      EUR: json.rates.EUR,
+      USD: r.USD,
+      KRW: r.KRW,
+      EUR: r.EUR,
     };
   } catch {
     return { ...FALLBACK, fetchedAt: new Date().toISOString() };
