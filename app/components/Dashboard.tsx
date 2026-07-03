@@ -613,6 +613,37 @@ interface ShoppingItem { title: string; link: string; image: string; lprice: num
 
 const DISPLAY = 20; // 네이버 API 한 번에 가져올 개수
 
+// ──────────────────────────────────────────────
+// 쇼핑 카드 스켈레톤
+// ──────────────────────────────────────────────
+const shimmerStyle: React.CSSProperties = {
+  background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+  backgroundSize: '200% 100%',
+  animation: 'shimmer 1.4s infinite',
+};
+
+function SkeletonCard({ snapAlign }: { snapAlign?: boolean }) {
+  return (
+    <>
+      <style>{`@keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }`}</style>
+      <div
+        className="w-40 shrink-0 flex flex-col rounded-xl border border-black/6 overflow-hidden"
+        style={{ scrollSnapAlign: snapAlign ? 'start' : undefined }}
+      >
+        {/* 이미지 영역 */}
+        <div className="w-full h-36" style={shimmerStyle} />
+        {/* 텍스트 영역 */}
+        <div className="px-3 py-2.5 flex flex-col gap-2 flex-1">
+          <div className="h-2.5 rounded-full w-full" style={shimmerStyle} />
+          <div className="h-2.5 rounded-full w-3/4" style={shimmerStyle} />
+          <div className="h-2 rounded-full w-1/2 mt-auto" style={shimmerStyle} />
+          <div className="h-3.5 rounded-full w-2/3" style={shimmerStyle} />
+        </div>
+      </div>
+    </>
+  );
+}
+
 function ShoppingCarousel({ query, label }: { query: string; label: string }) {
   const [items, setItems]       = useState<ShoppingItem[]>([]);
   const [loading, setLoading]   = useState(true);
@@ -693,7 +724,7 @@ function ShoppingCarousel({ query, label }: { query: string; label: string }) {
       {loading && (
         <div className="flex gap-3 overflow-hidden">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="w-40 shrink-0 rounded-xl border border-black/6 bg-black/[0.02] h-52 animate-pulse" />
+            <SkeletonCard key={i} />
           ))}
         </div>
       )}
@@ -758,7 +789,7 @@ function ShoppingCarousel({ query, label }: { query: string; label: string }) {
 
             {/* 로딩 스켈레톤 (다음 페이지) */}
             {loadingMore && [...Array(3)].map((_, i) => (
-              <div key={`skel-${i}`} className="w-40 shrink-0 rounded-xl border border-black/6 bg-black/[0.02] h-52 animate-pulse" style={{ scrollSnapAlign: 'start' }} />
+              <SkeletonCard key={`skel-${i}`} snapAlign />
             ))}
 
             {/* 더 이상 없을 때 끝 표시 */}
