@@ -455,7 +455,7 @@ function CustomsTable({ months, fxKrw, fxUsd }: { months: CustomsMonthData[]; fx
 function SectionLabel({ title, sub }: { title: string; sub?: string }) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-xs font-semibold text-black/40 uppercase tracking-widest">{title}</h2>
+      <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: KEY }}>{title}</h2>
       {sub && <p className="text-xs text-black/25">{sub}</p>}
     </div>
   );
@@ -518,7 +518,7 @@ function NewsSectionBase({ title, subtitle, apiPath, sourceNote }: {
   return (
     <section className="mb-10">
       <div className="flex items-center gap-3 mb-4">
-        <h2 className="text-sm font-semibold tracking-widest text-black/40 uppercase">{title}</h2>
+        <h2 className="text-sm font-semibold tracking-widest uppercase" style={{ color: KEY }}>{title}</h2>
         <div className="flex-1 h-px bg-black/6" />
         <span className="text-xs text-black/25">{subtitle}</span>
       </div>
@@ -662,7 +662,7 @@ function ShoppingCarousel({ query, label }: { query: string; label: string }) {
 
   return (
     <div className="mb-6">
-      <p className="text-xs font-semibold text-black/35 tracking-widest uppercase mb-3">{label}</p>
+      <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: KEY }}>{label}</p>
 
       {loading && (
         <div className="flex gap-3 overflow-hidden">
@@ -681,25 +681,24 @@ function ShoppingCarousel({ query, label }: { query: string; label: string }) {
       )}
 
       {!loading && !noKey && items.length > 0 && (
-        <div className="relative">
-          {/* 왼쪽 화살표 */}
-          {canScrollLeft && (
-            <button
-              onClick={() => scroll('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110 active:scale-95"
-              style={{ background: KEY, color: '#fff', border: `1.5px solid ${KEY_BORDER}` }}
-              aria-label="이전"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M9 11L5 7L9 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-          )}
+        <div className="flex items-center gap-2">
+          {/* 왼쪽 화살표 — 캐러셀 바깥 */}
+          <button
+            onClick={() => scroll('left')}
+            disabled={!canScrollLeft}
+            className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 active:scale-95 disabled:opacity-0 disabled:pointer-events-none"
+            style={{ background: KEY, color: '#fff', border: `1.5px solid ${KEY_BORDER}` }}
+            aria-label="이전"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M9 11L5 7L9 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
 
           {/* 스크롤 컨테이너 */}
           <div
             ref={scrollRef}
-            className="flex gap-3 overflow-x-auto pb-2"
+            className="flex-1 flex gap-3 overflow-x-auto pb-2"
             style={{
               scrollSnapType: 'x mandatory',
               WebkitOverflowScrolling: 'touch',
@@ -739,29 +738,28 @@ function ShoppingCarousel({ query, label }: { query: string; label: string }) {
 
             {/* 더 이상 없을 때 끝 표시 */}
             {!hasMore && !loadingMore && (
-              <div className="w-20 shrink-0 flex flex-col items-center justify-center text-black/20 text-xs gap-1">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M7 10h6M10 7l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <div className="w-16 shrink-0 flex flex-col items-center justify-center text-black/20 text-xs gap-1">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M6 9h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
                 끝
               </div>
             )}
           </div>
 
-          {/* 오른쪽 화살표 */}
-          {canScrollRight && (
-            <button
-              onClick={() => scroll('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110 active:scale-95"
-              style={{ background: KEY, color: '#fff', border: `1.5px solid ${KEY_BORDER}` }}
-              aria-label="다음"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-          )}
+          {/* 오른쪽 화살표 — 캐러셀 바깥 */}
+          <button
+            onClick={() => scroll('right')}
+            disabled={!canScrollRight}
+            className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 active:scale-95 disabled:opacity-0 disabled:pointer-events-none"
+            style={{ background: KEY, color: '#fff', border: `1.5px solid ${KEY_BORDER}` }}
+            aria-label="다음"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
         </div>
       )}
     </div>
