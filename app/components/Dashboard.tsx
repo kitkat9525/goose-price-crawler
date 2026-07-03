@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -585,21 +585,80 @@ function NewsSection() {
 // ──────────────────────────────────────────────
 interface ShoppingItem { title: string; link: string; image: string; lprice: number; mallName: string; }
 
-function ShoppingCarousel({ query, label }: { query: string; label: string }) {
-  const [items, setItems] = useState<ShoppingItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [noKey, setNoKey] = useState(false);
+const DISPLAY = 20; // 네이버 API 한 번에 가져올 개수
 
+function ShoppingCarousel({ query, label }: { query: string; label: string }) {
+  const [items, setItems]       = useState<ShoppingItem[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [noKey, setNoKey]       = useState(false);
+  const [hasMore, setHasMore]   = useState(true);
+  const startRef                = useRef(1);
+  const scrollRef               = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft]   = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // 초기 로드
   useEffect(() => {
-    fetch(`/api/shopping?query=${encodeURIComponent(query)}`)
+    startRef.current = 1;
+    setLoading(true);
+    setHasMore(true);
+    fetch(`/api/shopping?query=${encodeURIComponent(query)}&start=1`)
       .then(r => r.json())
       .then(d => {
         if (d.error === 'naver_key_missing') { setNoKey(true); }
-        else { setItems(d.items ?? []); }
-        setLoading(false);
+        else {
+          const newItems: ShoppingItem[] = d.items ?? [];
+          setItems(newItems);
+          if (newItems.length < DISPLAY) setHasMore(false);
+          else { startRef.current = 1 + DISPLAY; }
+        }
       })
-      .catch(() => setLoading(false));
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [query]);
+
+  // 다음 페이지 로드
+  const loadMore = useCallback(() => {
+    if (loadingMore || !hasMore || noKey) return;
+    setLoadingMore(true);
+    fetch(`/api/shopping?query=${encodeURIComponent(query)}&start=${startRef.current}`)
+      .then(r => r.json())
+      .then(d => {
+        const newItems: ShoppingItem[] = d.items ?? [];
+        setItems(prev => [...prev, ...newItems]);
+        if (newItems.length < DISPLAY) setHasMore(false);
+        else { startRef.current += DISPLAY; }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingMore(false));
+  }, [query, loadingMore, hasMore, noKey]);
+
+  // 스크롤 위치 감지 → 버튼 표시 + 끝 도달 시 다음 페이지
+  const updateScrollState = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 8);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 8);
+    // 오른쪽 끝 80px 이내 진입 시 다음 페이지 로드
+    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 80) {
+      loadMore();
+    }
+  }, [loadMore]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', updateScrollState, { passive: true });
+    updateScrollState();
+    return () => el.removeEventListener('scroll', updateScrollState);
+  }, [updateScrollState, items]);
+
+  const scroll = (dir: 'left' | 'right') => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir === 'right' ? 320 : -320, behavior: 'smooth' });
+  };
 
   return (
     <div className="mb-6">
@@ -622,36 +681,87 @@ function ShoppingCarousel({ query, label }: { query: string; label: string }) {
       )}
 
       {!loading && !noKey && items.length > 0 && (
-        <div
-          className="flex gap-3 overflow-x-auto pb-2"
-          style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
-        >
-          {items.map((item, i) => (
-            <a
-              key={i}
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-40 shrink-0 flex flex-col rounded-xl border border-black/8 overflow-hidden hover:border-black/20 transition-all group"
-              style={{ scrollSnapAlign: 'start' }}
+        <div className="relative">
+          {/* 왼쪽 화살표 */}
+          {canScrollLeft && (
+            <button
+              onClick={() => scroll('left')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110 active:scale-95"
+              style={{ background: KEY, color: '#fff', border: `1.5px solid ${KEY_BORDER}` }}
+              aria-label="이전"
             >
-              {/* 상품 이미지 */}
-              <div className="w-full h-36 bg-black/[0.03] overflow-hidden">
-                {item.image
-                  ? <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  : <div className="w-full h-full flex items-center justify-center text-black/15 text-xs">이미지 없음</div>
-                }
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M9 11L5 7L9 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          )}
+
+          {/* 스크롤 컨테이너 */}
+          <div
+            ref={scrollRef}
+            className="flex gap-3 overflow-x-auto pb-2"
+            style={{
+              scrollSnapType: 'x mandatory',
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+          >
+            {items.map((item, i) => (
+              <a
+                key={`${item.link}-${i}`}
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-40 shrink-0 flex flex-col rounded-xl border border-black/8 overflow-hidden hover:border-black/20 transition-all group"
+                style={{ scrollSnapAlign: 'start' }}
+              >
+                <div className="w-full h-36 bg-black/[0.03] overflow-hidden">
+                  {item.image
+                    ? <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    : <div className="w-full h-full flex items-center justify-center text-black/15 text-xs">이미지 없음</div>
+                  }
+                </div>
+                <div className="px-3 py-2.5 flex flex-col gap-1 flex-1">
+                  <p className="text-xs font-medium text-black/75 leading-snug line-clamp-2">{item.title}</p>
+                  <p className="text-xs text-black/30 mt-auto">{item.mallName}</p>
+                  <p className="text-sm font-bold text-black">
+                    {item.lprice > 0 ? `₩${item.lprice.toLocaleString('ko-KR')}` : '가격 미정'}
+                  </p>
+                </div>
+              </a>
+            ))}
+
+            {/* 로딩 스켈레톤 (다음 페이지) */}
+            {loadingMore && [...Array(3)].map((_, i) => (
+              <div key={`skel-${i}`} className="w-40 shrink-0 rounded-xl border border-black/6 bg-black/[0.02] h-52 animate-pulse" style={{ scrollSnapAlign: 'start' }} />
+            ))}
+
+            {/* 더 이상 없을 때 끝 표시 */}
+            {!hasMore && !loadingMore && (
+              <div className="w-20 shrink-0 flex flex-col items-center justify-center text-black/20 text-xs gap-1">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M7 10h6M10 7l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                끝
               </div>
-              {/* 정보 */}
-              <div className="px-3 py-2.5 flex flex-col gap-1 flex-1">
-                <p className="text-xs font-medium text-black/75 leading-snug line-clamp-2">{item.title}</p>
-                <p className="text-xs text-black/30 mt-auto">{item.mallName}</p>
-                <p className="text-sm font-bold text-black">
-                  {item.lprice > 0 ? `₩${item.lprice.toLocaleString('ko-KR')}` : '가격 미정'}
-                </p>
-              </div>
-            </a>
-          ))}
+            )}
+          </div>
+
+          {/* 오른쪽 화살표 */}
+          {canScrollRight && (
+            <button
+              onClick={() => scroll('right')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110 active:scale-95"
+              style={{ background: KEY, color: '#fff', border: `1.5px solid ${KEY_BORDER}` }}
+              aria-label="다음"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -662,9 +772,9 @@ function ShoppingSection() {
   return (
     <section>
       <div className="flex items-center gap-3 mb-5">
-        <h2 className="text-sm font-semibold tracking-widest text-black/40 uppercase">네이버 쇼핑</h2>
+        <h2 className="text-sm font-semibold tracking-widest uppercase" style={{ color: KEY }}>쇼핑 트렌드</h2>
         <div className="flex-1 h-px bg-black/6" />
-        <span className="text-xs text-black/25">인기순 · 네이버 쇼핑 기준</span>
+        <span className="text-xs text-black/25">인기 · 판매량순 · 네이버 쇼핑 기준</span>
       </div>
       <ShoppingCarousel query="구스이불" label="구스이불" />
       <ShoppingCarousel query="구스베개" label="구스베개" />
