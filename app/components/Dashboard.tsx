@@ -217,11 +217,11 @@ function StatusBadge({ source }: { source: 'live' | 'fallback' | 'unavailable' }
 // 환율 바
 // ──────────────────────────────────────────────
 function FxBar({ fx }: { fx: FxRates }) {
-  const cny = 1 / fx.USD;
-  const krw = fx.KRW / fx.USD;
-  const eur = fx.EUR / fx.USD;
+  // 교차환율 계산 (기준: 1 CNY = fx.X)
+  const eurKrw = fx.KRW / fx.EUR;   // €1 = ₩X  ← 핵심 (폴란드·헝가리산 원재료)
+  const usdKrw = fx.KRW / fx.USD;   // $1 = ₩X
+  const cnyKrw = fx.KRW;            // ¥1 = ₩X  (CFD 시세 참고)
 
-  // API 마지막 갱신 시각 포맷 (예: "Thu, 03 Jul 2026 00:02 UTC")
   const lastUpdated = fx.lastUpdatedUtc
     ? (() => {
         try {
@@ -236,16 +236,24 @@ function FxBar({ fx }: { fx: FxRates }) {
     : null;
 
   return (
-    <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-x-6 gap-y-2">
-      <span className="text-xs text-black/35 font-medium tracking-wide">$1 USD =</span>
-      <div className="flex flex-wrap gap-x-4 gap-y-1">
-        <span className="text-sm font-semibold text-black">¥{fmtNum(cny, 2)} <span className="text-xs text-black/30 font-normal">CNY</span></span>
-        <span className="text-sm font-semibold text-black">₩{fmtNum(krw, 0)} <span className="text-xs text-black/30 font-normal">KRW</span></span>
-        <span className="text-sm font-semibold text-black">€{fmtNum(eur, 4)} <span className="text-xs text-black/30 font-normal">EUR</span></span>
+    <div className="flex flex-col gap-3">
+      {/* EUR/KRW — 메인 (원재료 거래 통화) */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: KEY_BG, color: KEY, border: `1px solid ${KEY_BORDER}` }}>
+          원재료 기준
+        </span>
+        <span className="text-xs text-black/35 font-medium">€1 EUR =</span>
+        <span className="text-xl font-bold text-black">₩{fmtNum(eurKrw, 0)}</span>
+        <span className="text-xs text-black/30">KRW</span>
       </div>
-      {lastUpdated && (
-        <span className="text-xs text-black/30">기준 {lastUpdated}</span>
-      )}
+
+      {/* USD / CNY 보조 */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-black/5 pt-2">
+        <span className="text-xs text-black/30 font-medium">참고</span>
+        <span className="text-xs text-black/50">$1 USD = <span className="font-semibold text-black/70">₩{fmtNum(usdKrw, 0)}</span></span>
+        <span className="text-xs text-black/50">¥1 CNY = <span className="font-semibold text-black/70">₩{fmtNum(cnyKrw, 2)}</span></span>
+        {lastUpdated && <span className="text-xs text-black/25 ml-auto">기준 {lastUpdated}</span>}
+      </div>
     </div>
   );
 }
