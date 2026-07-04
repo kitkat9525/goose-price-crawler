@@ -26,6 +26,7 @@ const NAV_SECTIONS = [
   { id: 'sec-news-kr',  label: '국내뉴스' },
   { id: 'sec-news',     label: '해외뉴스' },
   { id: 'sec-shopping', label: '쇼핑트렌드' },
+  { id: 'sec-price-dist', label: '가격분포' },
 ];
 
 // ──────────────────────────────────────────────
@@ -923,23 +924,8 @@ const SHOPPING_ITEMS = [
 function ShoppingSection() {
   return (
     <section className="space-y-10">
-      {/* 가격 분포 */}
-      <div>
-        <div className="flex items-center gap-3 mb-5">
-          <h2 className="text-sm font-semibold tracking-widest uppercase" style={{ color: KEY }}>가격 분포</h2>
-          <div className="flex-1 h-px bg-black/6" />
-          <span className="text-xs text-black/25">상위 100개 기준 · 네이버 쇼핑</span>
-        </div>
-        {SHOPPING_ITEMS.map(({ query, label }) => (
-          <div key={query} className="mb-6">
-            <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: KEY }}>{label}</p>
-            <ShoppingPriceChart query={query} />
-          </div>
-        ))}
-      </div>
-
       {/* 쇼핑 캐러셀 */}
-      <div>
+      <div id="sec-shopping">
         <div className="flex items-center gap-3 mb-5">
           <h2 className="text-sm font-semibold tracking-widest uppercase" style={{ color: KEY }}>쇼핑 트렌드</h2>
           <div className="flex-1 h-px bg-black/6" />
@@ -952,6 +938,21 @@ function ShoppingSection() {
           </div>
         ))}
         <p className="text-xs text-black/25 mt-1">출처: 네이버 쇼핑 검색 API</p>
+      </div>
+
+      {/* 가격 분포 */}
+      <div id="sec-price-dist">
+        <div className="flex items-center gap-3 mb-5">
+          <h2 className="text-sm font-semibold tracking-widest uppercase" style={{ color: KEY }}>가격 분포</h2>
+          <div className="flex-1 h-px bg-black/6" />
+          <span className="text-xs text-black/25">상위 100개 기준 · 네이버 쇼핑</span>
+        </div>
+        {SHOPPING_ITEMS.map(({ query, label }) => (
+          <div key={query} className="mb-6">
+            <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: KEY }}>{label}</p>
+            <ShoppingPriceChart query={query} />
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -1157,7 +1158,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
         <div id="sec-news"><NewsSection /></div>
 
         {/* 네이버 쇼핑 */}
-        <div id="sec-shopping"><ShoppingSection /></div>
+        <ShoppingSection />
 
         {/* 주의사항 */}
         <section className="text-xs text-black/20 space-y-1 pb-4 border-t border-black/5 pt-6">
