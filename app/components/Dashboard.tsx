@@ -721,8 +721,8 @@ function ShoppingPriceChart({ query }: { query: string }) {
           <YAxis hide />
           <Tooltip
             contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.7)' }}
-            formatter={(v: number) => [`${v}개`, '상품 수']}
-            labelFormatter={(l: string) => `가격대 ${l}`}
+            formatter={(v) => [`${v ?? 0}개`, '상품 수']}
+            labelFormatter={(l) => `가격대 ${l}`}
           />
           <Line
             type="monotone"
