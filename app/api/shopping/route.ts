@@ -25,8 +25,9 @@ export async function GET(req: Request) {
     return NextResponse.json({ items: [], error: 'naver_key_missing' });
   }
 
-  const start = Math.max(1, parseInt(searchParams.get('start') ?? '1', 10));
-  const url = `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(query)}&display=20&start=${start}&sort=sim`;
+  const start   = Math.max(1, parseInt(searchParams.get('start') ?? '1', 10));
+  const display = Math.min(100, Math.max(1, parseInt(searchParams.get('display') ?? '20', 10)));
+  const url = `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(query)}&display=${display}&start=${start}&sort=sim`;
 
   try {
     const res = await fetch(url, {

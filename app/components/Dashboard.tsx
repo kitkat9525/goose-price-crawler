@@ -644,7 +644,92 @@ function SkeletonCard({ snapAlign }: { snapAlign?: boolean }) {
   );
 }
 
-function ShoppingCarousel({ query, label }: { query: string; label: string }) {
+// ──────────────────────────────────────────────
+// 쇼핑 가격대 분석 차트
+// ──────────────────────────────────────────────
+interface PriceTier { label: string; count: number; avg: number; min: number; max: number; }
+
+function ShoppingPriceChart({ query }: { query: string }) {
+  const [tiers, setTiers] = useState<PriceTier[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/shopping?query=${encodeURIComponent(query)}&display=100&start=1`)
+      .then(r => r.json())
+      .then(d => {
+        const items: { lprice: number }[] = (d.items ?? []).filter((i: { lprice: number }) => i.lprice > 0);
+        if (items.length === 0) { setLoading(false); return; }
+
+        const prices = items.map(i => i.lprice).sort((a, b) => a - b);
+        const n = prices.length;
+        const t1 = prices[Math.floor(n / 3)];
+        const t2 = prices[Math.floor((n * 2) / 3)];
+
+        const buckets = [
+          { label: '저가', items: prices.filter(p => p < t1) },
+          { label: '중가', items: prices.filter(p => p >= t1 && p < t2) },
+          { label: '고가', items: prices.filter(p => p >= t2) },
+        ];
+
+        setTiers(buckets.map(b => ({
+          label: b.label,
+          count: b.items.length,
+          avg: b.items.length ? Math.round(b.items.reduce((s, p) => s + p, 0) / b.items.length) : 0,
+          min: b.items.length ? b.items[0] : 0,
+          max: b.items.length ? b.items[b.items.length - 1] : 0,
+        })));
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [query]);
+
+  if (loading) return (
+    <div className="h-32 rounded-xl border border-black/6 mb-4" style={shimmerStyle} />
+  );
+  if (tiers.length === 0) return null;
+
+  const maxAvg = Math.max(...tiers.map(t => t.avg));
+
+  return (
+    <div className="rounded-xl border border-black/6 px-4 py-4 mb-4">
+      <p className="text-xs text-black/30 mb-3">가격대 분포 · 상위 100개 기준</p>
+      <div className="flex items-end gap-3">
+        {tiers.map(tier => {
+          const barH = maxAvg > 0 ? Math.round((tier.avg / maxAvg) * 80) : 0;
+          const isLow = tier.label === '저가';
+          const isHigh = tier.label === '고가';
+          const barColor = isLow ? 'rgba(170,142,92,0.35)' : isHigh ? KEY : 'rgba(170,142,92,0.65)';
+          return (
+            <div key={tier.label} className="flex-1 flex flex-col items-center gap-1">
+              {/* 평균가 */}
+              <p className="text-xs font-semibold text-black/70">
+                ₩{tier.avg.toLocaleString('ko-KR')}
+              </p>
+              {/* 바 */}
+              <div className="w-full flex items-end" style={{ height: 88 }}>
+                <div
+                  className="w-full rounded-t-lg transition-all duration-700"
+                  style={{ height: `${barH}px`, backgroundColor: barColor }}
+                />
+              </div>
+              {/* 레이블 */}
+              <p className="text-xs font-bold" style={{ color: KEY }}>{tier.label}</p>
+              <p className="text-xs text-black/30">{tier.count}개</p>
+              {/* 범위 */}
+              <p className="text-[10px] text-black/20 text-center leading-tight">
+                {tier.min === tier.max
+                  ? `₩${tier.min.toLocaleString('ko-KR')}`
+                  : `₩${tier.min.toLocaleString('ko-KR')} ~ ₩${tier.max.toLocaleString('ko-KR')}`}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ShoppingCarousel({ query }: { query: string }) {
   const [items, setItems]       = useState<ShoppingItem[]>([]);
   const [loading, setLoading]   = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -719,8 +804,6 @@ function ShoppingCarousel({ query, label }: { query: string; label: string }) {
 
   return (
     <div className="mb-6">
-      <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: KEY }}>{label}</p>
-
       {loading && (
         <div className="flex gap-3 overflow-hidden">
           {[...Array(5)].map((_, i) => (
@@ -830,9 +913,17 @@ function ShoppingSection() {
         <div className="flex-1 h-px bg-black/6" />
         <span className="text-xs text-black/25">인기 · 판매량순 · 네이버 쇼핑 기준</span>
       </div>
-      <ShoppingCarousel query="구스이불" label="구스이불" />
-      <ShoppingCarousel query="구스베개" label="구스베개" />
-      <ShoppingCarousel query="구스토퍼" label="구스토퍼" />
+      {[
+        { query: '구스이불', label: '구스이불' },
+        { query: '구스베개', label: '구스베개' },
+        { query: '구스토퍼', label: '구스토퍼' },
+      ].map(({ query, label }) => (
+        <div key={query} className="mb-8">
+          <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: KEY }}>{label}</p>
+          <ShoppingPriceChart query={query} />
+          <ShoppingCarousel query={query} />
+        </div>
+      ))}
       <p className="text-xs text-black/25 mt-1">출처: 네이버 쇼핑 검색 API</p>
     </section>
   );
