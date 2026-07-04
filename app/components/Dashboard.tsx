@@ -645,86 +645,95 @@ function SkeletonCard({ snapAlign }: { snapAlign?: boolean }) {
 }
 
 // ──────────────────────────────────────────────
-// 쇼핑 가격대 분석 차트
+// 쇼핑 가격 분포 꺾은선 차트
 // ──────────────────────────────────────────────
-interface PriceTier { label: string; count: number; avg: number; min: number; max: number; }
+interface DistPoint { priceLabel: string; count: number; avgPrice: number; }
 
 function ShoppingPriceChart({ query }: { query: string }) {
-  const [tiers, setTiers] = useState<PriceTier[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [chartData, setChartData] = useState<DistPoint[]>([]);
+  const [tiers, setTiers] = useState<{ label: string; avg: number; boundary: number }[]>([]);
+  const [loading, setLoading]    = useState(true);
 
   useEffect(() => {
     fetch(`/api/shopping?query=${encodeURIComponent(query)}&display=100&start=1`)
       .then(r => r.json())
       .then(d => {
-        const items: { lprice: number }[] = (d.items ?? []).filter((i: { lprice: number }) => i.lprice > 0);
-        if (items.length === 0) { setLoading(false); return; }
+        const raw: { lprice: number }[] = (d.items ?? []).filter((i: { lprice: number }) => i.lprice > 0);
+        if (raw.length === 0) { setLoading(false); return; }
 
-        const prices = items.map(i => i.lprice).sort((a, b) => a - b);
+        const prices = raw.map(i => i.lprice).sort((a, b) => a - b);
         const n = prices.length;
+        const minP = prices[0];
+        const maxP = prices[n - 1];
+
+        // 10개 구간으로 분포
+        const BUCKETS = 10;
+        const step = (maxP - minP) / BUCKETS || 1;
+        const points: DistPoint[] = Array.from({ length: BUCKETS }, (_, i) => {
+          const lo = minP + i * step;
+          const hi = lo + step;
+          const bucket = prices.filter(p => i === BUCKETS - 1 ? p >= lo : p >= lo && p < hi);
+          const avg = bucket.length ? Math.round(bucket.reduce((s, p) => s + p, 0) / bucket.length) : 0;
+          return {
+            priceLabel: `₩${Math.round(lo / 10000)}만`,
+            count: bucket.length,
+            avgPrice: avg,
+          };
+        });
+        setChartData(points);
+
+        // 저가/중가/고가 경계 (33퍼센타일)
         const t1 = prices[Math.floor(n / 3)];
         const t2 = prices[Math.floor((n * 2) / 3)];
-
-        const buckets = [
-          { label: '저가', items: prices.filter(p => p < t1) },
-          { label: '중가', items: prices.filter(p => p >= t1 && p < t2) },
-          { label: '고가', items: prices.filter(p => p >= t2) },
-        ];
-
-        setTiers(buckets.map(b => ({
-          label: b.label,
-          count: b.items.length,
-          avg: b.items.length ? Math.round(b.items.reduce((s, p) => s + p, 0) / b.items.length) : 0,
-          min: b.items.length ? b.items[0] : 0,
-          max: b.items.length ? b.items[b.items.length - 1] : 0,
-        })));
+        const avg = (arr: number[]) => arr.length ? Math.round(arr.reduce((s, p) => s + p, 0) / arr.length) : 0;
+        setTiers([
+          { label: '저가', avg: avg(prices.filter(p => p < t1)), boundary: t1 },
+          { label: '중가', avg: avg(prices.filter(p => p >= t1 && p < t2)), boundary: t2 },
+          { label: '고가', avg: avg(prices.filter(p => p >= t2)), boundary: maxP },
+        ]);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, [query]);
 
   if (loading) return (
-    <div className="h-32 rounded-xl border border-black/6 mb-4" style={shimmerStyle} />
+    <div className="h-40 rounded-xl border border-black/6 mb-4" style={shimmerStyle} />
   );
-  if (tiers.length === 0) return null;
-
-  const maxAvg = Math.max(...tiers.map(t => t.avg));
+  if (chartData.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-black/6 px-4 py-4 mb-4">
-      <p className="text-xs text-black/30 mb-3">가격대 분포 · 상위 100개 기준</p>
-      <div className="flex items-end gap-3">
-        {tiers.map(tier => {
-          const barH = maxAvg > 0 ? Math.round((tier.avg / maxAvg) * 80) : 0;
-          const isLow = tier.label === '저가';
-          const isHigh = tier.label === '고가';
-          const barColor = isLow ? 'rgba(170,142,92,0.35)' : isHigh ? KEY : 'rgba(170,142,92,0.65)';
-          return (
-            <div key={tier.label} className="flex-1 flex flex-col items-center gap-1">
-              {/* 평균가 */}
-              <p className="text-xs font-semibold text-black/70">
-                ₩{tier.avg.toLocaleString('ko-KR')}
-              </p>
-              {/* 바 */}
-              <div className="w-full flex items-end" style={{ height: 88 }}>
-                <div
-                  className="w-full rounded-t-lg transition-all duration-700"
-                  style={{ height: `${barH}px`, backgroundColor: barColor }}
-                />
-              </div>
-              {/* 레이블 */}
-              <p className="text-xs font-bold" style={{ color: KEY }}>{tier.label}</p>
-              <p className="text-xs text-black/30">{tier.count}개</p>
-              {/* 범위 */}
-              <p className="text-[10px] text-black/20 text-center leading-tight">
-                {tier.min === tier.max
-                  ? `₩${tier.min.toLocaleString('ko-KR')}`
-                  : `₩${tier.min.toLocaleString('ko-KR')} ~ ₩${tier.max.toLocaleString('ko-KR')}`}
-              </p>
-            </div>
-          );
-        })}
+    <div className="rounded-xl border border-black/6 px-4 pt-4 pb-2 mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs text-black/30">가격 분포 · 100개 기준</p>
+        <div className="flex gap-3">
+          {tiers.map(t => (
+            <span key={t.label} className="text-xs text-black/40">
+              <span className="font-semibold" style={{ color: KEY }}>{t.label}</span>{' '}
+              평균 ₩{t.avg.toLocaleString('ko-KR')}
+            </span>
+          ))}
+        </div>
       </div>
+      <ResponsiveContainer width="100%" height={130}>
+        <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
+          <XAxis dataKey="priceLabel" tick={{ fontSize: 10, fill: 'rgba(0,0,0,0.3)' }} tickLine={false} axisLine={false} />
+          <YAxis hide />
+          <Tooltip
+            contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.7)' }}
+            formatter={(v: number) => [`${v}개`, '상품 수']}
+            labelFormatter={(l: string) => `가격대 ${l}`}
+          />
+          <Line
+            type="monotone"
+            dataKey="count"
+            stroke={KEY}
+            strokeWidth={2}
+            dot={{ r: 3, fill: KEY, strokeWidth: 0 }}
+            activeDot={{ r: 5 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }
