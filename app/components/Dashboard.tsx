@@ -914,26 +914,45 @@ function ShoppingCarousel({ query }: { query: string }) {
   );
 }
 
+const SHOPPING_ITEMS = [
+  { query: '구스이불', label: '구스이불' },
+  { query: '구스베개', label: '구스베개' },
+  { query: '구스토퍼', label: '구스토퍼' },
+];
+
 function ShoppingSection() {
   return (
-    <section>
-      <div className="flex items-center gap-3 mb-5">
-        <h2 className="text-sm font-semibold tracking-widest uppercase" style={{ color: KEY }}>쇼핑 트렌드</h2>
-        <div className="flex-1 h-px bg-black/6" />
-        <span className="text-xs text-black/25">인기 · 판매량순 · 네이버 쇼핑 기준</span>
-      </div>
-      {[
-        { query: '구스이불', label: '구스이불' },
-        { query: '구스베개', label: '구스베개' },
-        { query: '구스토퍼', label: '구스토퍼' },
-      ].map(({ query, label }) => (
-        <div key={query} className="mb-8">
-          <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: KEY }}>{label}</p>
-          <ShoppingPriceChart query={query} />
-          <ShoppingCarousel query={query} />
+    <section className="space-y-10">
+      {/* 가격 분포 */}
+      <div>
+        <div className="flex items-center gap-3 mb-5">
+          <h2 className="text-sm font-semibold tracking-widest uppercase" style={{ color: KEY }}>가격 분포</h2>
+          <div className="flex-1 h-px bg-black/6" />
+          <span className="text-xs text-black/25">상위 100개 기준 · 네이버 쇼핑</span>
         </div>
-      ))}
-      <p className="text-xs text-black/25 mt-1">출처: 네이버 쇼핑 검색 API</p>
+        {SHOPPING_ITEMS.map(({ query, label }) => (
+          <div key={query} className="mb-6">
+            <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: KEY }}>{label}</p>
+            <ShoppingPriceChart query={query} />
+          </div>
+        ))}
+      </div>
+
+      {/* 쇼핑 캐러셀 */}
+      <div>
+        <div className="flex items-center gap-3 mb-5">
+          <h2 className="text-sm font-semibold tracking-widest uppercase" style={{ color: KEY }}>쇼핑 트렌드</h2>
+          <div className="flex-1 h-px bg-black/6" />
+          <span className="text-xs text-black/25">인기 · 판매량순 · 네이버 쇼핑 기준</span>
+        </div>
+        {SHOPPING_ITEMS.map(({ query, label }) => (
+          <div key={query} className="mb-8">
+            <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: KEY }}>{label}</p>
+            <ShoppingCarousel query={query} />
+          </div>
+        ))}
+        <p className="text-xs text-black/25 mt-1">출처: 네이버 쇼핑 검색 API</p>
+      </div>
     </section>
   );
 }
