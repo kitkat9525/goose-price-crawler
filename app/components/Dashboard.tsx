@@ -7,6 +7,7 @@ import {
   Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import type { AggregatedData, CategoryPrices, PriceEntry, CustomsMonthData, FxRates } from '@/app/lib/aggregate';
+import type { NewsItem } from '@/app/lib/types';
 import { CUSTOMS_HS_NOTE } from '@/app/lib/sources/customs';
 
 // ──────────────────────────────────────────────
@@ -25,7 +26,7 @@ const NAV_SECTIONS = [
   { id: 'sec-customs',    label: '수입통계' },
   { id: 'sec-news-kr',    label: '국내뉴스' },
   { id: 'sec-news',       label: '해외뉴스' },
-{ id: 'sec-shopping',   label: '쇼핑트렌드' },
+  { id: 'sec-shopping',   label: '쇼핑트렌드' },
   { id: 'sec-price-dist', label: '가격분포' },
 ];
 
@@ -198,18 +199,6 @@ function FeedbackModal({ onClose }: { onClose: () => void }) {
         )}
       </div>
     </div>
-  );
-}
-
-// ──────────────────────────────────────────────
-// 실시간 뱃지
-// ──────────────────────────────────────────────
-function StatusBadge({ source }: { source: 'live' | 'fallback' | 'unavailable' }) {
-  if (source !== 'live') return null;
-  return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: KEY_BG, border: `1px solid ${KEY_BORDER}`, color: KEY }}>
-      <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: '#22c55e' }} /> 실시간
-    </span>
   );
 }
 
@@ -489,9 +478,10 @@ function CustomsTable({ months, fxKrw, fxUsd }: { months: CustomsMonthData[]; fx
 // ──────────────────────────────────────────────
 function SectionLabel({ title, sub }: { title: string; sub?: string }) {
   return (
-    <div className="flex items-center justify-between mb-4">
-      <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: KEY }}>{title}</h2>
-      {sub && <p className="text-xs text-black/25">{sub}</p>}
+    <div className="flex items-center gap-3 mb-4">
+      <h2 className="text-xs font-semibold uppercase tracking-widest whitespace-nowrap" style={{ color: KEY }}>{title}</h2>
+      <div className="flex-1 h-px bg-black/6" />
+      {sub && <span className="text-xs text-black/25 whitespace-nowrap">{sub}</span>}
     </div>
   );
 }
@@ -499,8 +489,6 @@ function SectionLabel({ title, sub }: { title: string; sub?: string }) {
 // ──────────────────────────────────────────────
 // 뉴스
 // ──────────────────────────────────────────────
-interface NewsItem { title: string; link: string; pubDate: string; source: string; }
-
 function NewsCard({ item, index }: { item: NewsItem; index: number }) {
   return (
     <li className="flex items-start gap-4 px-5 py-3.5 hover:bg-black/[0.02] transition-colors">
@@ -552,11 +540,7 @@ function NewsSectionBase({ title, subtitle, apiPath, sourceNote }: {
 
   return (
     <section className="mb-10">
-      <div className="flex items-center gap-3 mb-4">
-        <h2 className="text-sm font-semibold tracking-widest uppercase" style={{ color: KEY }}>{title}</h2>
-        <div className="flex-1 h-px bg-black/6" />
-        <span className="text-xs text-black/25">{subtitle}</span>
-      </div>
+      <SectionLabel title={title} sub={subtitle} />
       <div className="rounded-xl border border-black/8 overflow-hidden" style={{ borderTop: `2px solid ${KEY}` }}>
         {loading && <div className="flex items-center justify-center py-12 text-sm text-black/30">뉴스를 불러오는 중...</div>}
         {!loading && error && <div className="flex items-center justify-center py-12 text-sm text-black/30">뉴스를 가져오지 못했습니다.</div>}
@@ -593,27 +577,10 @@ function NewsSectionBase({ title, subtitle, apiPath, sourceNote }: {
   );
 }
 
-function KrNewsSection() {
-  return (
-    <NewsSectionBase
-      title="국내 뉴스"
-      subtitle="거위털 · 오리털 · 구스이불"
-      apiPath="/api/news-kr"
-      sourceNote="출처: 네이버 뉴스 검색 API · 국내 언론사 기준"
-    />
-  );
-}
-
-function NewsSection() {
-  return (
-    <NewsSectionBase
-      title="해외 뉴스"
-      subtitle="거위털 · 오리털 · 침구류"
-      apiPath="/api/news"
-      sourceNote="출처: Google News RSS · 해외 영문 뉴스 기준"
-    />
-  );
-}
+const NEWS_CONFIGS = [
+  { id: 'sec-news-kr', title: '국내 뉴스',  subtitle: '거위털 · 오리털 · 구스이불', apiPath: '/api/news-kr', sourceNote: '출처: 네이버 뉴스 검색 API · 국내 언론사 기준' },
+  { id: 'sec-news',    title: '해외 뉴스',  subtitle: '거위털 · 오리털 · 침구류',   apiPath: '/api/news',    sourceNote: '출처: Google News RSS · 해외 영문 뉴스 기준' },
+] as const;
 
 // ──────────────────────────────────────────────
 // 네이버 쇼핑 캐러셀
@@ -631,10 +598,12 @@ const shimmerStyle: React.CSSProperties = {
   animation: 'shimmer 1.4s infinite',
 };
 
+const SHIMMER_KEYFRAMES = `@keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }`;
+
 function SkeletonCard({ snapAlign }: { snapAlign?: boolean }) {
   return (
     <>
-      <style>{`@keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }`}</style>
+      <style>{SHIMMER_KEYFRAMES}</style>
       <div
         className="w-40 shrink-0 flex flex-col rounded-xl border border-black/6 overflow-hidden"
         style={{ scrollSnapAlign: snapAlign ? 'start' : undefined }}
@@ -923,8 +892,6 @@ function ShoppingCarousel({ query }: { query: string }) {
   );
 }
 
-
-
 const SHOPPING_ITEMS = [
   { query: '구스이불', label: '구스이불' },
   { query: '구스베개', label: '구스베개' },
@@ -936,11 +903,7 @@ function ShoppingSection() {
     <section className="space-y-10">
       {/* 쇼핑 캐러셀 */}
       <div id="sec-shopping">
-        <div className="flex items-center gap-3 mb-5">
-          <h2 className="text-sm font-semibold tracking-widest uppercase" style={{ color: KEY }}>쇼핑 트렌드</h2>
-          <div className="flex-1 h-px bg-black/6" />
-          <span className="text-xs text-black/25">인기 · 판매량순 · 네이버 쇼핑 기준</span>
-        </div>
+        <SectionLabel title="쇼핑 트렌드" sub="인기 · 판매량순 · 네이버 쇼핑 기준" />
         {SHOPPING_ITEMS.map(({ query, label }) => (
           <div key={query} className="mb-8">
             <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: KEY }}>{label}</p>
@@ -952,11 +915,7 @@ function ShoppingSection() {
 
       {/* 가격 분포 */}
       <div id="sec-price-dist">
-        <div className="flex items-center gap-3 mb-5">
-          <h2 className="text-sm font-semibold tracking-widest uppercase" style={{ color: KEY }}>가격 분포</h2>
-          <div className="flex-1 h-px bg-black/6" />
-          <span className="text-xs text-black/25">상위 100개 기준 · 네이버 쇼핑</span>
-        </div>
+        <SectionLabel title="가격 분포" sub="상위 100개 기준 · 네이버 쇼핑" />
         {SHOPPING_ITEMS.map(({ query, label }) => (
           <div key={query} className="mb-6">
             <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: KEY }}>{label}</p>
@@ -1161,12 +1120,12 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           )}
         </section>
 
-        {/* 국내 뉴스 */}
-        <div id="sec-news-kr"><KrNewsSection /></div>
-
-        {/* 해외 뉴스 */}
-        <div id="sec-news"><NewsSection /></div>
-
+        {/* 뉴스 */}
+        {NEWS_CONFIGS.map(cfg => (
+          <div key={cfg.id} id={cfg.id}>
+            <NewsSectionBase {...cfg} />
+          </div>
+        ))}
 
         {/* 네이버 쇼핑 */}
         <ShoppingSection />
