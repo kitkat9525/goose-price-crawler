@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
-export const revalidate = 21600; // 6시간 캐시
+// 이 라우트는 삭제 예정 (구스초이 리포트 기능 제거)
+
 
 const PROMPT = `
 goosechoi.com은 한국의 구스다운(거위털) 침구 전문 브랜드야. 이 사이트를 분석해서 아래 JSON 형식으로만 응답해줘. 마크다운 없이 JSON만.
