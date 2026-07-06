@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
+  BarChart, Bar, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import type { AggregatedData, CategoryPrices, PriceEntry, CustomsMonthData, FxRates } from '@/app/lib/aggregate';
@@ -951,6 +951,9 @@ const AGE_LABEL:    Record<string, string> = {
   '40': '40대', '50': '50대', '60': '60대+',
 };
 
+// 차트 색상 — KEY 계열 + 보조색
+const INSIGHT_COLORS = ['#AA8E5C', '#4A7C6F', '#6B7280', '#8B5E3C', '#4A6B8B', '#7C6B8B'];
+
 // 월별×그룹 형태 데이터 → 그룹별 평균으로 집계
 function aggregateByGroup(data: InsightBreakdown[]): InsightBreakdown[] {
   const sums: Record<string, { total: number; count: number }> = {};
@@ -993,10 +996,14 @@ function MiniBarChart({
           formatter={(v: any) => [`${v}%`, '비율']}
           cursor={{ fill: 'rgba(0,0,0,0.03)' }}
         />
-        <Bar dataKey="ratio" fill={KEY} radius={[0, 3, 3, 0]}
+        <Bar dataKey="ratio" radius={[0, 3, 3, 0]}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           label={{ position: 'right', fontSize: 10, fill: 'rgba(0,0,0,0.4)', formatter: (v: any) => `${v}%` }}
-        />
+        >
+          {mapped.map((_, i) => (
+            <Cell key={i} fill={INSIGHT_COLORS[i % INSIGHT_COLORS.length]} />
+          ))}
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
@@ -1010,6 +1017,8 @@ function AgeBarChart({ data }: { data: InsightBreakdown[] }) {
   if (!mapped.length) return (
     <p className="text-xs text-black/25 text-center py-4">데이터 없음</p>
   );
+  // 최대값 기준으로 색 강조 (비율 높을수록 KEY 계열, 낮을수록 연한 색)
+  const maxRatio = Math.max(...mapped.map(d => d.ratio));
   return (
     <ResponsiveContainer width="100%" height={130}>
       <BarChart data={mapped} margin={{ top: 16, right: 8, left: 0, bottom: 0 }}>
@@ -1022,10 +1031,17 @@ function AgeBarChart({ data }: { data: InsightBreakdown[] }) {
           formatter={(v: any) => [`${v}%`, '비율']}
           cursor={{ fill: 'rgba(0,0,0,0.03)' }}
         />
-        <Bar dataKey="ratio" fill={KEY} radius={[3, 3, 0, 0]}
+        <Bar dataKey="ratio" radius={[3, 3, 0, 0]}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           label={{ position: 'top', fontSize: 10, fill: 'rgba(0,0,0,0.35)', formatter: (v: any) => `${v}%` }}
-        />
+        >
+          {mapped.map((d, i) => {
+            // 최대값은 KEY 컬러, 나머지는 비율에 따라 투명도 조절
+            const intensity = maxRatio > 0 ? d.ratio / maxRatio : 0;
+            const alpha = Math.round(40 + intensity * 215).toString(16).padStart(2, '0');
+            return <Cell key={i} fill={`#AA8E5C${alpha}`} />;
+          })}
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
