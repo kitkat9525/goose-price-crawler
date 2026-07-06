@@ -21,9 +21,6 @@ export function FxBar({ fx }: { fx: FxRates }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: KEY_BG, color: KEY, border: `1px solid ${KEY_BORDER}` }}>
-          원재료 기준
-        </span>
         <span className="text-xs text-black/35 font-medium">€1 EUR =</span>
         <span className="text-xl font-bold text-black">₩{fmtNum(eurKrw, 0)}</span>
         <span className="text-xs text-black/30">KRW</span>
