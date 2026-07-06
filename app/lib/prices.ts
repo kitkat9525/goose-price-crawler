@@ -42,21 +42,10 @@ const GRADE_ORDER = ['70%', '80%', '90%', '95%'];
 
 const CFD_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-  'Accept': 'application/json, text/plain, */*',
+  'Accept': 'text/html,application/xhtml+xml,*/*',
   'Accept-Language': 'zh-CN,zh;q=0.9',
   'Referer': 'https://www.cfd.com.cn/index.php?s=/Web/Market/platform.html',
 };
-
-interface CfdListItem {
-  title: string;
-  data: Record<string, string>;
-}
-
-interface CfdListResponse {
-  code: number;
-  msg: string;
-  data: CfdListItem[];
-}
 
 // FALLBACK: 서标 기준 최근 데이터
 const FALLBACK: PriceData = {
@@ -103,42 +92,67 @@ const FALLBACK: PriceData = {
   ],
 };
 
-function parseListJson(json: CfdListResponse): PriceData | null {
+function parseTableHtml(html: string): PriceData | null {
   try {
-    if (json.code !== 10000 || !Array.isArray(json.data) || json.data.length === 0) return null;
+    // getTable 응답은 <tr> 덩어리 → <table>로 감싸서 파싱
+    const tableHtml = `<table>${html}</table>`;
+
+    // 헤더 <th>에서 날짜 추출 → 마지막 날짜가 updatedAt
+    const thDates = [...tableHtml.matchAll(/<div class="cell">(\d{4}-\d{2}-\d{2})<\/div>/g)].map(m => m[1]);
+    const updatedAt = thDates.length > 0 ? thDates.reduce((a, b) => (a > b ? a : b)) : '';
+    if (!updatedAt) return null;
+
+    // <tr> 행 파싱
+    const trRe = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+    const rows: string[][] = [];
+    let trMatch;
+    while ((trMatch = trRe.exec(tableHtml)) !== null) {
+      const rowHtml = trMatch[1];
+      const cells: string[] = [];
+      const tdRe = /<td[^>]*>([\s\S]*?)<\/td>/gi;
+      let tdMatch;
+      while ((tdMatch = tdRe.exec(rowHtml)) !== null) {
+        cells.push(tdMatch[1].replace(/<[^>]+>/g, '').trim());
+      }
+      if (cells.length >= 5) rows.push(cells);
+    }
+    if (rows.length === 0) return null;
 
     const categoriesMap = new Map<string, CategoryPrices>();
-    let updatedAt = '';
+    let currentCategory = '';
 
-    for (const item of json.data) {
-      // "70%白鸭绒" → grade="70%", catName="白鸭绒"
-      const match = item.title.match(/^(\d+%)(.+)$/);
-      if (!match) continue;
-      const grade = match[1];
-      const catName = match[2];
+    for (const cells of rows) {
+      const firstCell = cells[0];
+      let grade: string;
+      let priceStart: number;
 
-      const catInfo = CATEGORY_MAP[catName];
-      if (!catInfo || !GRADE_ORDER.includes(grade)) continue;
+      if (CATEGORY_MAP[firstCell]) {
+        currentCategory = firstCell;
+        if (!categoriesMap.has(currentCategory)) {
+          categoriesMap.set(currentCategory, { name: currentCategory, ...CATEGORY_MAP[currentCategory], prices: [] });
+        }
+        grade = cells[1];
+        priceStart = 2;
+      } else if (firstCell === '' || firstCell === '查看') {
+        grade = cells[1] ?? '';
+        priceStart = 2;
+      } else if (GRADE_ORDER.includes(firstCell)) {
+        grade = firstCell;
+        priceStart = 1;
+      } else {
+        continue;
+      }
 
-      const dates = Object.keys(item.data).sort();
-      if (dates.length < 2) continue;
+      if (!currentCategory || !GRADE_ORDER.includes(grade)) continue;
 
-      const prevDate = dates[dates.length - 2];
-      const currentDate = dates[dates.length - 1];
+      const prev    = parseFloat(cells[priceStart]);
+      const current = parseFloat(cells[priceStart + 1]);
+      const diff    = parseFloat(cells[priceStart + 2]);
+      const yoy     = cells[priceStart + 3] ?? '';
 
-      if (!updatedAt) updatedAt = currentDate;
-
-      const prev = parseFloat(item.data[prevDate]);
-      const current = parseFloat(item.data[currentDate]);
       if (isNaN(prev) || isNaN(current)) continue;
 
-      const diff = parseFloat((current - prev).toFixed(2));
-      const yoy = ((diff / prev) * 100).toFixed(2) + '%';
-
-      if (!categoriesMap.has(catName)) {
-        categoriesMap.set(catName, { name: catName, ...catInfo, prices: [] });
-      }
-      categoriesMap.get(catName)!.prices.push({ grade, prev, current, diff, yoy });
+      categoriesMap.get(currentCategory)!.prices.push({ grade, prev, current, diff, yoy });
     }
 
     // 등급 순서 정렬
@@ -147,7 +161,7 @@ function parseListJson(json: CfdListResponse): PriceData | null {
     }
 
     const categories = [...categoriesMap.values()].filter(c => c.prices.length > 0);
-    if (categories.length === 0 || !updatedAt) return null;
+    if (categories.length === 0) return null;
 
     return { updatedAt, fetchedAt: new Date().toISOString(), source: 'live', categories };
   } catch {
@@ -157,14 +171,14 @@ function parseListJson(json: CfdListResponse): PriceData | null {
 
 export async function fetchPrices(standard = '服标'): Promise<PriceData> {
   const type = STANDARD_TYPES[standard] ?? 2;
-  const url = `https://www.cfd.com.cn/index.php?s=/Web/Data/getList/&category=1&type=${type}&datetype=1`;
+  const url = `https://www.cfd.com.cn/index.php?s=/Web/Data/getTable/&category=1&type=${type}&datetype=1`;
 
   try {
     const res = await fetch(url, { headers: CFD_HEADERS, cache: 'no-store' });
     if (!res.ok) return { ...FALLBACK, fetchedAt: new Date().toISOString() };
 
-    const json: CfdListResponse = await res.json();
-    const parsed = parseListJson(json);
+    const html = await res.text();
+    const parsed = parseTableHtml(html);
     return parsed ?? { ...FALLBACK, fetchedAt: new Date().toISOString() };
   } catch {
     return { ...FALLBACK, fetchedAt: new Date().toISOString() };
