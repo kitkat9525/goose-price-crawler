@@ -208,7 +208,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
             <div style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
               <SectionLabel
                 title="거위털 — Goose Down"
-                sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}
+                sub={`마지막 업데이트 ${cfdData.updatedAt}`}
               />
               <div className="space-y-4">
                 <CfdBarChart categories={goose} currency={currency} fx={fx} label="거위털" />
@@ -221,7 +221,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
             <div style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
               <SectionLabel
                 title="오리털 — Duck Down"
-                sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}
+                sub={`마지막 업데이트 ${cfdData.updatedAt}`}
               />
               <div className="space-y-4">
                 <CfdBarChart categories={duck} currency={currency} fx={fx} label="오리털" />
