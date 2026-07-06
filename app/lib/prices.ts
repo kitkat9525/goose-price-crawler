@@ -78,23 +78,20 @@ const GRADES = ['70%', '80%', '90%', '95%'];
 
 function parseCFDHtml(html: string): PriceData | null {
   try {
-    // 白鸭绒 이 포함된 테이블 찾기
-    const anchorIdx = html.indexOf('白鸭绒');
-    if (anchorIdx === -1) return null;
+    // 업데이트 날짜: 페이지 텍스트에서 직접 파싱 (更新日期：2026-07-03)
+    const dateMatch = html.match(/更新日期[：:]\s*(\d{4}-\d{2}-\d{2})/);
+    const updatedAt = dateMatch?.[1];
+    if (!updatedAt) return null;
 
-    const tableOpenIdx = html.lastIndexOf('<table', anchorIdx);
+    // 테이블은 class="table_body"로 찾기 (白鸭绒은 sortbox에도 등장하므로 사용 불가)
+    const tableClassIdx = html.indexOf('class="table_body');
+    if (tableClassIdx === -1) return null;
+    const tableOpenIdx = html.lastIndexOf('<table', tableClassIdx);
     if (tableOpenIdx === -1) return null;
-    const tableCloseIdx = html.indexOf('</table>', anchorIdx);
+    const tableCloseIdx = html.indexOf('</table>', tableClassIdx);
     if (tableCloseIdx === -1) return null;
 
     const tableHtml = html.slice(tableOpenIdx, tableCloseIdx + 8);
-
-    // 테이블 헤더에서 날짜 파싱 → 가장 최신 날짜를 updatedAt으로 사용
-    const headerDates = [...tableHtml.matchAll(/(\d{4}-\d{2}-\d{2})/g)].map(m => m[1]);
-    const updatedAt = headerDates.length > 0
-      ? headerDates.reduce((a, b) => (a > b ? a : b))
-      : html.match(/更新日期[：:]\s*(\d{4}-\d{2}-\d{2})/)?.[1];
-    if (!updatedAt) return null;
 
     // 행 파싱
     const trRe = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
