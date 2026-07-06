@@ -951,6 +951,20 @@ const AGE_LABEL:    Record<string, string> = {
   '40': '40대', '50': '50대', '60': '60대+',
 };
 
+// 월별×그룹 형태 데이터 → 그룹별 평균으로 집계
+function aggregateByGroup(data: InsightBreakdown[]): InsightBreakdown[] {
+  const sums: Record<string, { total: number; count: number }> = {};
+  for (const d of data) {
+    if (!sums[d.group]) sums[d.group] = { total: 0, count: 0 };
+    sums[d.group].total += d.ratio;
+    sums[d.group].count += 1;
+  }
+  return Object.entries(sums).map(([group, { total, count }]) => ({
+    group,
+    ratio: parseFloat((total / count).toFixed(1)),
+  }));
+}
+
 function MiniBarChart({
   data, labelMap, height = 90,
 }: {
@@ -1035,9 +1049,9 @@ function ShoppingInsightSection() {
     fullLabel: d.period.slice(0, 7).replace('-', '.'),
     ratio:     parseFloat(Number(d.ratio).toFixed(1)),
   }));
-  const deviceData = data?.device?.[active] ?? [];
-  const genderData = data?.gender?.[active] ?? [];
-  const ageData    = data?.age?.[active]    ?? [];
+  const deviceData = aggregateByGroup(data?.device?.[active] ?? []);
+  const genderData = aggregateByGroup(data?.gender?.[active] ?? []);
+  const ageData    = aggregateByGroup(data?.age?.[active]    ?? []);
 
   return (
     <section id="sec-insight" className="mb-10">
