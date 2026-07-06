@@ -78,7 +78,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
   function scrollTo(id: string) {
     const el = document.getElementById(id);
     if (!el) return;
-    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 130, behavior: 'smooth' });
   }
 
   function saveCurrency(c: Currency) {
