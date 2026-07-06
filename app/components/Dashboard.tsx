@@ -66,14 +66,13 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
   }
 
   const CFD_STANDARDS = [
-    { key: '服标', label: '중국의류표준', tooltip: 'GB/T 14272\n羽绒服装' },
-    { key: '寝标', label: '중국침구표준', tooltip: '寝具标准\n(침구 전용)' },
-    { key: '国标', label: '중국국가표준', tooltip: 'GB/T 17685\n羽绒羽毛' },
-    { key: '欧标', label: '유럽표준',     tooltip: 'EN 12934' },
-    { key: '美标', label: '미국표준',     tooltip: 'IDFL / IDFB' },
-    { key: '日标', label: '일본표준',     tooltip: 'JIS L 1903' },
+    { key: '服标', label: '중국의류표준' },
+    { key: '寝标', label: '중국침구표준' },
+    { key: '国标', label: '중국국가표준' },
+    { key: '欧标', label: '유럽표준' },
+    { key: '美标', label: '미국표준' },
+    { key: '日标', label: '일본표준' },
   ];
-  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
 
   const [cfdStandard, setCfdStandard] = useState<string>('服标');
   const [cfdData, setCfdData] = useState<PriceData>(data.cfd);
@@ -167,46 +166,20 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
         {/* CFD 규격 필터 탭 */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
-          {CFD_STANDARDS.map(({ key, label, tooltip }) => {
-            const isActive = cfdStandard === key;
-            return (
-              <div key={key} className="relative shrink-0">
-                {/* 탭 전체: 클릭 시 탭 전환 */}
-                <div
-                  onClick={() => !cfdLoading && switchStandard(key)}
-                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all whitespace-nowrap cursor-pointer select-none"
-                  style={isActive
-                    ? { backgroundColor: KEY, color: 'white', borderColor: KEY }
-                    : { backgroundColor: 'white', color: 'rgba(0,0,0,0.45)', borderColor: 'rgba(0,0,0,0.12)' }
-                  }
-                >
-                  {label}
-                  {/* ? — hover 시 툴팁 표시, 탭 전환 막음 */}
-                  <span
-                    onClick={e => e.stopPropagation()}
-                    onMouseEnter={e => { e.stopPropagation(); setActiveTooltip(key); }}
-                    onMouseLeave={() => setActiveTooltip(null)}
-                    className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 cursor-default"
-                    style={isActive
-                      ? { backgroundColor: 'rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.85)' }
-                      : { backgroundColor: 'rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.4)' }
-                    }
-                  >
-                    ?
-                  </span>
-                </div>
-                {/* 툴팁 */}
-                {activeTooltip === key && (
-                  <div
-                    className="absolute top-full mt-1.5 left-0 z-50 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-pre text-white"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.82)', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', lineHeight: 1.6 }}
-                  >
-                    {tooltip}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {CFD_STANDARDS.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => switchStandard(key)}
+              disabled={cfdLoading}
+              className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all whitespace-nowrap"
+              style={cfdStandard === key
+                ? { backgroundColor: KEY, color: 'white', borderColor: KEY }
+                : { backgroundColor: 'white', color: 'rgba(0,0,0,0.45)', borderColor: 'rgba(0,0,0,0.12)' }
+              }
+            >
+              {label}
+            </button>
+          ))}
           <span className="text-xs text-black/30 shrink-0 ml-auto pl-2">
             {cfdLoading ? '로딩 중…' : '해당 국가의 실제 가격과 다를 수 있습니다.'}
           </span>
