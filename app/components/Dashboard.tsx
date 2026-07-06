@@ -181,7 +181,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
         {/* ── CFD 규격 필터 탭 ── */}
         <div>
-          <SectionLabel title="표준 규격" sub="해당 규격에 맞춘 중국산 원자재의 가격입니다." />
+          <SectionLabel title="표준 규격" sub="해당 규격에 맞춘 중국산 원자재의 가격입니다." subStyle={{ color: '#c0392b' }} />
           <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
             {CFD_STANDARDS.map(({ key, label }) => (
               <button
