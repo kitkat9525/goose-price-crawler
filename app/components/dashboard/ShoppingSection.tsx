@@ -87,7 +87,7 @@ function ShoppingPriceChart({ query }: { query: string }) {
   if (chartData.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-black/6 px-4 pt-4 pb-2 mb-4">
+    <div className="mb-2">
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs text-black/30">가격 분포 · 100개 기준</p>
         <div className="flex gap-3">
@@ -100,7 +100,7 @@ function ShoppingPriceChart({ query }: { query: string }) {
         </div>
       </div>
       <ResponsiveContainer width="100%" height={130}>
-        <LineChart data={chartData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
+        <LineChart data={chartData} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
           <XAxis dataKey="priceLabel" tick={{ fontSize: 10, fill: 'rgba(0,0,0,0.3)' }} tickLine={false} axisLine={false} />
           <YAxis hide />
@@ -118,6 +118,7 @@ function ShoppingPriceChart({ query }: { query: string }) {
     </div>
   );
 }
+
 
 // ─── 쇼핑 캐러셀 ────────────────────────────────
 function ShoppingCarousel({ query }: { query: string }) {
