@@ -156,7 +156,8 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 sm:space-y-10">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex flex-col gap-8 sm:gap-10">
 
         {/* ── 환율 ── */}
         <section id="sec-fx" className="border border-black/6 rounded-2xl px-5 py-4 space-y-4">
@@ -200,33 +201,34 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           </span>
         </div>
 
-        {/* ── 거위털 ── */}
-        <section id="sec-goose" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
-          <SectionLabel
-            title="거위털 — Goose Down"
-            sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}
-          />
-          <div className="space-y-4">
-            <CfdBarChart categories={goose} currency={currency} fx={fx} label="거위털" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {goose.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
+        {/* ── 거위털 + 오리털 (2컬럼) ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <section id="sec-goose" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+            <SectionLabel
+              title="거위털 — Goose Down"
+              sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}
+            />
+            <div className="space-y-4">
+              <CfdBarChart categories={goose} currency={currency} fx={fx} label="거위털" />
+              <div className="flex flex-col gap-4">
+                {goose.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ── 오리털 ── */}
-        <section id="sec-duck" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
-          <SectionLabel
-            title="오리털 — Duck Down"
-            sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}
-          />
-          <div className="space-y-4">
-            <CfdBarChart categories={duck} currency={currency} fx={fx} label="오리털" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {duck.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
+          <section id="sec-duck" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+            <SectionLabel
+              title="오리털 — Duck Down"
+              sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}
+            />
+            <div className="space-y-4">
+              <CfdBarChart categories={duck} currency={currency} fx={fx} label="오리털" />
+              <div className="flex flex-col gap-4">
+                {duck.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
 
         {/* ── 관세청 수입통계 ── */}
         <section id="sec-customs">
@@ -276,14 +278,14 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           )}
         </section>
 
-        {/* ── 뉴스 ── */}
+        {/* ── 뉴스 (국내 + 해외 2컬럼) ── */}
         <NewsSections />
 
-        {/* ── 쇼핑트렌드 ── */}
-        <ShoppingSection />
-
-        {/* ── 쇼핑인사이트 ── */}
-        <ShoppingInsightSection />
+        {/* ── 쇼핑트렌드 + 쇼핑인사이트 (2컬럼) ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <ShoppingSection />
+          <ShoppingInsightSection />
+        </div>
 
         {/* ── 주의사항 ── */}
         <section className="text-xs text-black/20 space-y-1 pb-4 border-t border-black/5 pt-6">
@@ -291,6 +293,8 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           <p>· 환율은 open.er-api.com 기준이며, 실제 거래 환율과 차이가 있을 수 있습니다.</p>
           <p>· 이 정보는 참고용이며, 투자·구매 결정의 직접 근거로 사용하지 마세요.</p>
         </section>
+
+        </div>
       </main>
 
       {/* ── 푸터 ── */}

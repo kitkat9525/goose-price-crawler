@@ -56,7 +56,7 @@ function NewsSectionBase({ title, subtitle, apiPath, sourceNote }: {
       : { borderColor: KEY, color: KEY };
 
   return (
-    <section className="mb-10">
+    <section>
       <SectionLabel title={title} sub={subtitle} />
       <div className="rounded-xl border border-black/8 overflow-hidden" style={{ borderTop: `2px solid ${KEY}` }}>
         {loading && <div className="flex items-center justify-center py-12 text-sm text-black/30">뉴스를 불러오는 중...</div>}
@@ -102,12 +102,12 @@ export const NEWS_CONFIGS = [
 
 export function NewsSections() {
   return (
-    <>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       {NEWS_CONFIGS.map(cfg => (
         <div key={cfg.id} id={cfg.id}>
           <NewsSectionBase {...cfg} />
         </div>
       ))}
-    </>
+    </div>
   );
 }

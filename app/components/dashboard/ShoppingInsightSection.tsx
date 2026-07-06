@@ -115,7 +115,7 @@ export function ShoppingInsightSection() {
   const ageData    = aggregateByGroup(data?.age?.[active]    ?? []);
 
   return (
-    <section id="sec-insight" className="mb-10">
+    <section id="sec-insight">
       <SectionLabel title="쇼핑 인사이트" sub="네이버 쇼핑인사이트 · 클릭 지수 기준" />
 
       {loading && (
