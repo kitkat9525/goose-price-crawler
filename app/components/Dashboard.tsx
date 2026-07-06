@@ -67,8 +67,8 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
   const [cfdStandard, setCfdStandard] = useState<string>('服标');
 
   const CFD_STANDARDS = [
-    { key: '服标', label: '의류표준' },
-    { key: '寝标', label: '침구표준' },
+    { key: '服标', label: '중국의류표준' },
+    { key: '寝标', label: '중국침구표준' },
     { key: '国标', label: '국가표준' },
     { key: '欧标', label: '유럽표준' },
     { key: '美标', label: '미국표준' },
