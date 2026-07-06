@@ -279,15 +279,32 @@ export function ShoppingSection() {
         ))}
         <p className="text-xs text-black/25 mt-1">출처: 네이버 쇼핑 검색 API</p>
       </div>
-      <div id="sec-price-dist">
-        <SectionLabel title="가격 분포" sub="상위 100개 기준 · 네이버 쇼핑" />
+      <PriceDistSection />
+    </section>
+  );
+}
+
+function PriceDistSection() {
+  const [active, setActive] = useState(SHOPPING_ITEMS[0].query);
+  return (
+    <div id="sec-price-dist">
+      <SectionLabel title="가격 분포" sub="상위 100개 기준 · 네이버 쇼핑" />
+      <div className="flex items-center gap-1.5 mb-5">
         {SHOPPING_ITEMS.map(({ query, label }) => (
-          <div key={query} className="mb-6">
-            <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: KEY }}>{label}</p>
-            <ShoppingPriceChart query={query} />
-          </div>
+          <button
+            key={query}
+            onClick={() => setActive(query)}
+            className="text-xs font-semibold px-3 py-1.5 rounded-full border transition-all"
+            style={active === query
+              ? { backgroundColor: KEY, color: '#fff', borderColor: KEY }
+              : { backgroundColor: 'white', color: 'rgba(0,0,0,0.45)', borderColor: 'rgba(0,0,0,0.12)' }
+            }
+          >
+            {label}
+          </button>
         ))}
       </div>
-    </section>
+      <ShoppingPriceChart query={active} />
+    </div>
   );
 }
