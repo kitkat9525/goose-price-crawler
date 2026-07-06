@@ -19,8 +19,9 @@ function parseNotice(content: string): { badge: BadgeType; body: string } {
 }
 
 export function NoticePopup() {
-  const [notices, setNotices] = useState<Feedback[]>([]);
-  const [visible, setVisible] = useState(false);
+  const [notices, setNotices]   = useState<Feedback[]>([]);
+  const [visible, setVisible]   = useState(false);
+  const [skipToday, setSkipToday] = useState(false);
 
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -36,16 +37,23 @@ export function NoticePopup() {
           setNotices(items);
           setVisible(true);
         }
-        localStorage.setItem(NOTICE_KEY, today);
       })
       .catch(() => {});
   }, []);
+
+  function close() {
+    if (skipToday) {
+      const today = new Date().toISOString().slice(0, 10);
+      localStorage.setItem(NOTICE_KEY, today);
+    }
+    setVisible(false);
+  }
 
   if (!visible) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
-      onClick={() => setVisible(false)}>
+      onClick={close}>
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <div
         className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
@@ -59,7 +67,7 @@ export function NoticePopup() {
             </span>
           </div>
           <button
-            onClick={() => setVisible(false)}
+            onClick={close}
             className="text-black/30 hover:text-black transition-colors p-1"
           >
             <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
@@ -95,10 +103,19 @@ export function NoticePopup() {
           })}
         </div>
 
-        {/* 확인 버튼 */}
-        <div className="px-5 py-4 border-t border-black/5">
+        {/* 하단 */}
+        <div className="px-5 py-4 border-t border-black/5 space-y-3">
+          <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
+            <input
+              type="checkbox"
+              checked={skipToday}
+              onChange={e => setSkipToday(e.target.checked)}
+              className="w-3.5 h-3.5 accent-black rounded"
+            />
+            <span className="text-xs text-black/40">오늘 하루 보지 않기</span>
+          </label>
           <button
-            onClick={() => setVisible(false)}
+            onClick={close}
             className="w-full py-2.5 rounded-xl text-sm font-semibold text-white"
             style={{ backgroundColor: KEY }}
           >
