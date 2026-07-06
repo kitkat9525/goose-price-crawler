@@ -28,6 +28,7 @@ const NAV_SECTIONS = [
   { id: 'sec-news',       label: '해외뉴스' },
   { id: 'sec-shopping',   label: '쇼핑트렌드' },
   { id: 'sec-price-dist', label: '가격분포' },
+  { id: 'sec-insight',    label: '쇼핑인사이트' },
 ];
 
 // ──────────────────────────────────────────────
@@ -928,6 +929,120 @@ function ShoppingSection() {
 }
 
 // ──────────────────────────────────────────────
+// 쇼핑인사이트
+// ──────────────────────────────────────────────
+interface InsightPoint { period: string; ratio: number; }
+interface InsightTrend { title: string; data: InsightPoint[]; }
+interface InsightData { source: 'live' | 'unavailable'; trends: InsightTrend[]; error?: string; }
+
+const INSIGHT_KEYWORDS = ['구스이불', '구스베개', '구스토퍼'];
+
+function ShoppingInsightSection() {
+  const [data, setData]     = useState<InsightData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [active, setActive]   = useState(INSIGHT_KEYWORDS[0]);
+
+  useEffect(() => {
+    fetch('/api/shopping-insight')
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const trend = data?.trends.find(t => t.title === active);
+  const chartData = (trend?.data ?? []).map(d => ({
+    label: d.period.slice(5, 7) + '월',   // "2025-10-01" → "10월"
+    fullLabel: d.period.slice(0, 7).replace('-', '.'), // "2025.10"
+    ratio: parseFloat(Number(d.ratio).toFixed(1)),
+  }));
+
+  return (
+    <section id="sec-insight" className="mb-10">
+      <SectionLabel title="쇼핑 인사이트" sub="네이버 쇼핑인사이트 · 클릭 지수 기준" />
+
+      {loading && (
+        <div className="border border-black/8 rounded-2xl flex items-center justify-center py-12 text-sm text-black/30">
+          불러오는 중...
+        </div>
+      )}
+
+      {!loading && (!data || data.source === 'unavailable') && (
+        <div className="border border-black/6 rounded-2xl px-5 py-10 text-center">
+          {data?.error === 'naver_key_missing'
+            ? <>
+                <p className="text-sm font-medium text-black/50">네이버 API 키가 설정되지 않았습니다</p>
+                <p className="text-xs text-black/30 mt-1">
+                  <code className="bg-black/5 px-1 rounded">NAVER_CLIENT_ID</code> /{' '}
+                  <code className="bg-black/5 px-1 rounded">NAVER_CLIENT_SECRET</code> 필요
+                </p>
+              </>
+            : <p className="text-sm text-black/40">데이터를 불러오지 못했습니다</p>
+          }
+        </div>
+      )}
+
+      {!loading && data?.source === 'live' && (
+        <div className="border border-black/8 rounded-2xl overflow-hidden">
+          {/* 탭 헤더 */}
+          <div className="px-5 py-4 border-b border-black/5 flex items-center justify-between">
+            <p className="text-xs font-semibold text-black/40 uppercase tracking-widest">월별 클릭 트렌드</p>
+            <div className="flex gap-1">
+              {INSIGHT_KEYWORDS.map(k => (
+                <button
+                  key={k}
+                  onClick={() => setActive(k)}
+                  className="text-xs font-semibold px-3 py-1 rounded-full transition-all"
+                  style={active === k
+                    ? { backgroundColor: KEY, color: '#fff' }
+                    : { color: 'rgba(0,0,0,0.35)' }
+                  }
+                >
+                  {k}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 차트 */}
+          <div className="px-4 py-5">
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke="rgba(0,0,0,0.05)" />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'rgba(0,0,0,0.35)' }} axisLine={false} tickLine={false} />
+                <YAxis
+                  domain={[0, 100]}
+                  tick={{ fontSize: 11, fill: 'rgba(0,0,0,0.35)' }}
+                  axisLine={false} tickLine={false} width={28}
+                />
+                <Tooltip
+                  contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
+                  labelFormatter={(_, payload) => payload?.[0]?.payload?.fullLabel ?? ''}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  formatter={(v: any) => [v, '클릭 지수']}
+                  cursor={{ stroke: 'rgba(0,0,0,0.08)' }}
+                />
+                <Line
+                  type="monotone" dataKey="ratio" stroke={KEY} strokeWidth={2}
+                  dot={{ r: 4, fill: KEY, strokeWidth: 0 }}
+                  activeDot={{ r: 5, fill: KEY }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* 푸터 */}
+          <div className="px-5 py-2.5 border-t border-black/5 bg-black/[0.015]">
+            <p className="text-xs text-black/25">
+              출처: 네이버 쇼핑인사이트 · 기간 내 최대값=100 기준 상대값 · 실제 판매량과 다를 수 있음
+            </p>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ──────────────────────────────────────────────
 // 메인 대시보드
 // ──────────────────────────────────────────────
 export default function Dashboard({ data }: { data: AggregatedData }) {
@@ -1129,6 +1244,9 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
         {/* 네이버 쇼핑 */}
         <ShoppingSection />
+
+        {/* 쇼핑인사이트 */}
+        <ShoppingInsightSection />
 
         {/* 주의사항 */}
         <section className="text-xs text-black/20 space-y-1 pb-4 border-t border-black/5 pt-6">

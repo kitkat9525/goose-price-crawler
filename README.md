@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 구초뉴스
 
-## Getting Started
+거위털·오리털 원자재 시장 데이터 대시보드. 내부용.
 
-First, run the development server:
+## 주요 기능
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **CFD 시세** — 중국우모협회 주간 도매가 (거위털·오리털, 70~95% 등급별)
+- **실시간 환율** — CNY/USD/KRW/EUR, 통화 전환 지원
+- **관세청 수입통계** — HS 0505100000 월별 수입량·금액·단가 추이
+- **국내·해외 뉴스** — 네이버 뉴스 API / Google News RSS
+- **네이버 쇼핑 트렌드** — 구스이불·구스베개·구스토퍼 상품 캐러셀 + 가격분포
+- **의견 보내기** — SQLite(Turso) 저장
+
+## 환경변수
+
+`.env.local` 파일을 만들고 아래 값을 설정합니다.
+
+```env
+# JWT 서명 시크릿 (필수)
+JWT_SECRET=your-secret-key
+
+# 관세청 공공데이터 API (선택 — 없으면 수입통계 섹션 비활성)
+# 발급: https://www.data.go.kr/data/15101609/openapi.do
+CUSTOMS_API_KEY=
+
+# 네이버 검색/쇼핑 API (선택 — 없으면 뉴스·쇼핑 섹션 비활성)
+# 발급: https://developers.naver.com/apps
+NAVER_CLIENT_ID=
+NAVER_CLIENT_SECRET=
+
+# Turso DB (선택 — 없으면 로컬 SQLite 파일 사용)
+# 발급: https://turso.tech
+TURSO_DATABASE_URL=
+TURSO_AUTH_TOKEN=
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 로컬 실행
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`http://localhost:3000` 에서 확인.
 
-## Learn More
+## 배포
 
-To learn more about Next.js, take a look at the following resources:
+Vercel에 연결 후 위 환경변수를 동일하게 추가하면 됩니다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 데이터 출처
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| 소스 | 내용 | 갱신 주기 |
+|------|------|----------|
+| [CFD 중국우모협회](https://www.cfd.com.cn) | 거위털·오리털 도매 시세 | 주 1회 |
+| [open.er-api.com](https://open.er-api.com) | CNY 기준 환율 | 시간 단위 |
+| [관세청 data.go.kr](https://www.data.go.kr/data/15101609/openapi.do) | HS 0505100000 수입통계 | 월 1회 |
+| 네이버 뉴스 API | 국내 뉴스 | 1시간 캐시 |
+| Google News RSS | 해외 영문 뉴스 | 1시간 캐시 |
+| 네이버 쇼핑 API | 상품 목록·가격분포 | 1시간 캐시 |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+참고용 데이터입니다. 투자·구매 결정의 직접 근거로 사용하지 마세요.
