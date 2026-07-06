@@ -174,7 +174,7 @@ export async function fetchPrices(): Promise<PriceData> {
           'Accept-Language': 'zh-CN,zh;q=0.9',
           Referer: 'https://www.cfd.com.cn/',
         },
-        next: { revalidate: 3600 },
+        cache: 'no-store',
       }
     );
 
