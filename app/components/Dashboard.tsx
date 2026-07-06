@@ -200,33 +200,34 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           </span>
         </div>
 
-        {/* ── 거위털 ── */}
-        <section id="sec-goose" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
-          <SectionLabel
-            title="거위털 — Goose Down"
-            sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}
-          />
-          <div className="space-y-4">
-            <CfdBarChart categories={goose} currency={currency} fx={fx} label="거위털" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {goose.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
+        {/* ── 거위털 + 오리털 (2컬럼) ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <section id="sec-goose" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+            <SectionLabel
+              title="거위털 — Goose Down"
+              sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}
+            />
+            <div className="space-y-4">
+              <CfdBarChart categories={goose} currency={currency} fx={fx} label="거위털" />
+              <div className="flex flex-col gap-4">
+                {goose.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ── 오리털 ── */}
-        <section id="sec-duck" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
-          <SectionLabel
-            title="오리털 — Duck Down"
-            sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}
-          />
-          <div className="space-y-4">
-            <CfdBarChart categories={duck} currency={currency} fx={fx} label="오리털" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {duck.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
+          <section id="sec-duck" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+            <SectionLabel
+              title="오리털 — Duck Down"
+              sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}
+            />
+            <div className="space-y-4">
+              <CfdBarChart categories={duck} currency={currency} fx={fx} label="오리털" />
+              <div className="flex flex-col gap-4">
+                {duck.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
 
         {/* ── 관세청 수입통계 ── */}
         <section id="sec-customs">
