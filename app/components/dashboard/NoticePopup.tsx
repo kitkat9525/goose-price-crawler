@@ -5,12 +5,17 @@ import { KEY, fmtKst } from './constants';
 
 interface Feedback { id: number; content: string; createdAt: string; }
 
-const NOTICE_KEY = 'notice_seen_date';
-const NOTICE_RE  = /^\d{8}\s+업데이트\s*:\s*/;
+const NOTICE_KEY    = 'notice_seen_date';
+const UPDATE_RE     = /^\d{8}\s+업데이트\s*:\s*/;
+const NOTICE_RE     = /^\d{8}\s+공지사항\s*:\s*/;
+const EITHER_RE     = /^\d{8}\s+(업데이트|공지사항)\s*:\s*/;
 
-function parseNotice(content: string) {
-  const body = content.replace(NOTICE_RE, '').trim();
-  return { isUpdate: NOTICE_RE.test(content), body };
+type BadgeType = 'update' | 'notice' | null;
+
+function parseNotice(content: string): { badge: BadgeType; body: string } {
+  if (UPDATE_RE.test(content)) return { badge: 'update', body: content.replace(UPDATE_RE, '').trim() };
+  if (NOTICE_RE.test(content)) return { badge: 'notice', body: content.replace(NOTICE_RE, '').trim() };
+  return { badge: null, body: content };
 }
 
 export function NoticePopup() {
@@ -25,7 +30,7 @@ export function NoticePopup() {
       .then(r => r.json())
       .then(d => {
         const items: Feedback[] = (d.feedbacks ?? []).filter(
-          (f: Feedback) => NOTICE_RE.test(f.content)
+          (f: Feedback) => EITHER_RE.test(f.content)
         );
         if (items.length > 0) {
           setNotices(items);
@@ -66,14 +71,20 @@ export function NoticePopup() {
         {/* 공지 목록 */}
         <div className="px-5 py-4 max-h-72 overflow-y-auto space-y-3">
           {notices.map(n => {
-            const { isUpdate, body } = parseNotice(n.content);
+            const { badge, body } = parseNotice(n.content);
             return (
               <div key={n.id} className="space-y-1">
                 <div className="flex items-start gap-2">
-                  {isUpdate && (
+                  {badge === 'update' && (
                     <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white"
                       style={{ backgroundColor: '#22c55e' }}>
                       NEW
+                    </span>
+                  )}
+                  {badge === 'notice' && (
+                    <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white"
+                      style={{ backgroundColor: '#1a1a1a' }}>
+                      공지
                     </span>
                   )}
                   <p className="text-sm font-medium text-black/85 leading-snug">{body}</p>
