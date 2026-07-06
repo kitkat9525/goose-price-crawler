@@ -22,7 +22,7 @@ interface InsightData {
 }
 
 // ─── 상수 ────────────────────────────────────────
-const INSIGHT_KEYWORDS = ['구스이불', '구스베개', '구스토퍼'];
+const INSIGHT_KEYWORDS = ['구스이불', '구스베개', '구스토퍼', '이불', '베개', '토퍼'];
 const DEVICE_LABEL: Record<string, string> = { pc: 'PC', mo: '모바일' };
 const GENDER_LABEL: Record<string, string> = { f: '여성', m: '남성' };
 const AGE_LABEL:    Record<string, string> = {

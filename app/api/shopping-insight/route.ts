@@ -4,7 +4,7 @@ export const revalidate = 3600;
 
 // 가구/인테리어 분야 코드 (침구 포함)
 const CATEGORY_CODE = '50000004';
-const KEYWORDS = ['구스이불', '구스베개', '구스토퍼'];
+const KEYWORDS = ['구스이불', '구스베개', '구스토퍼', '이불', '베개', '토퍼'];
 
 function fmtDate(d: Date): string {
   return d.toISOString().slice(0, 10);
