@@ -218,7 +218,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
             </div>
           </section>
 
-          <section id="sec-duck" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+          <section style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
             <SectionLabel
               title="오리털 — Duck Down"
               sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}

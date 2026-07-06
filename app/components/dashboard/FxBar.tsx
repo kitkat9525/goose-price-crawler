@@ -1,5 +1,5 @@
 import type { FxRates } from '@/app/lib/aggregate';
-import { KEY, KEY_BG, KEY_BORDER, fmtNum } from './constants';
+import { fmtNum } from './constants';
 
 export function FxBar({ fx }: { fx: FxRates }) {
   const eurKrw = fx.KRW / fx.EUR;
