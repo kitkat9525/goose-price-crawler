@@ -180,6 +180,8 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
         </section>
 
         {/* ── CFD 규격 필터 탭 ── */}
+        <div>
+          <p className="text-xs font-semibold text-black/35 uppercase tracking-widest mb-2">표준 규격</p>
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
           {CFD_STANDARDS.map(({ key, label }) => (
             <button
@@ -198,6 +200,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           <span className="text-xs shrink-0 ml-auto pl-2" style={{ color: cfdLoading ? 'rgba(0,0,0,0.3)' : '#c0392b' }}>
             {cfdLoading ? '로딩 중…' : '해당 규격에 맞춘 중국산 원자재의 가격입니다.'}
           </span>
+        </div>
         </div>
 
         {/* ── 거위털 + 오리털 (2컬럼) ── */}
