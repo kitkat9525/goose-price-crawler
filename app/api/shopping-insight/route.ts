@@ -4,7 +4,9 @@ export const revalidate = 3600;
 
 // 가구/인테리어 분야 코드 (침구 포함)
 const CATEGORY_CODE = '50000004';
-const KEYWORDS = ['구스이불', '구스베개', '구스토퍼', '이불', '베개', '토퍼'];
+const KEYWORDS   = ['구스이불', '구스베개', '구스토퍼', '이불', '베개', '토퍼'];
+const KEYWORDS_A = KEYWORDS.slice(0, 3);
+const KEYWORDS_B = KEYWORDS.slice(3);
 
 function fmtDate(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -58,12 +60,16 @@ export async function GET() {
     category:  CATEGORY_CODE,
   };
 
-  // 모든 요청 병렬 실행
-  const [trendJson, ...breakdownJsons] = await Promise.all([
-    // 월별 트렌드 (3 키워드 한번에)
+  // 모든 요청 병렬 실행 (트렌드는 5개 제한으로 2번 분할)
+  const [trendJsonA, trendJsonB, ...breakdownJsons] = await Promise.all([
     naverPost(
       'https://openapi.naver.com/v1/datalab/shopping/category/keywords',
-      { ...base, keyword: KEYWORDS.map(k => ({ name: k, param: [k] })) },
+      { ...base, keyword: KEYWORDS_A.map(k => ({ name: k, param: [k] })) },
+      clientId, clientSecret,
+    ),
+    naverPost(
+      'https://openapi.naver.com/v1/datalab/shopping/category/keywords',
+      { ...base, keyword: KEYWORDS_B.map(k => ({ name: k, param: [k] })) },
       clientId, clientSecret,
     ),
     // 기기별·성별·연령별 (키워드별 개별 호출)
@@ -77,11 +83,12 @@ export async function GET() {
     ]),
   ]);
 
-  // 월별 트렌드
-  const trends = (trendJson?.results ?? []).map((r: {
-    title: string;
-    data?: { period: string; ratio: number }[];
-  }) => ({ title: r.title, data: r.data ?? [] }));
+  // 월별 트렌드 (A+B 합치기)
+  type TrendResult = { title: string; data?: { period: string; ratio: number }[] };
+  const trends = [
+    ...(trendJsonA?.results ?? []),
+    ...(trendJsonB?.results ?? []),
+  ].map((r: TrendResult) => ({ title: r.title, data: r.data ?? [] }));
 
   // 기기별·성별·연령별 — keyword → data[]
   type Breakdown = { group: string; ratio: number };
