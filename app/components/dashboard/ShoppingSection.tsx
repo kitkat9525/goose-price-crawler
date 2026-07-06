@@ -268,7 +268,7 @@ const SHOPPING_ITEMS = [
 
 export function ShoppingSection() {
   return (
-    <div className="flex flex-col gap-10">
+    <section className="space-y-10">
       <div id="sec-shopping">
         <SectionLabel title="쇼핑 트렌드" sub="인기 · 판매량순 · 네이버 쇼핑 기준" />
         {SHOPPING_ITEMS.map(({ query, label }) => (
@@ -288,6 +288,6 @@ export function ShoppingSection() {
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
