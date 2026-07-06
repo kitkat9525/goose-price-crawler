@@ -74,12 +74,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
     { key: '日标', label: '일본표준',     tooltip: 'JIS L 1903' },
   ];
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
-  useEffect(() => {
-    if (!activeTooltip) return;
-    const close = () => setActiveTooltip(null);
-    document.addEventListener('click', close);
-    return () => document.removeEventListener('click', close);
-  }, [activeTooltip]);
 
   const [cfdStandard, setCfdStandard] = useState<string>('服标');
   const [cfdData, setCfdData] = useState<PriceData>(data.cfd);
@@ -187,10 +181,12 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
                   }
                 >
                   {label}
-                  {/* ? — 클릭 시 툴팁 토글, 탭 전환 막음 */}
+                  {/* ? — hover 시 툴팁 표시, 탭 전환 막음 */}
                   <span
-                    onClick={e => { e.stopPropagation(); setActiveTooltip(activeTooltip === key ? null : key); }}
-                    className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 cursor-pointer"
+                    onClick={e => e.stopPropagation()}
+                    onMouseEnter={e => { e.stopPropagation(); setActiveTooltip(key); }}
+                    onMouseLeave={() => setActiveTooltip(null)}
+                    className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 cursor-default"
                     style={isActive
                       ? { backgroundColor: 'rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.85)' }
                       : { backgroundColor: 'rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.4)' }
