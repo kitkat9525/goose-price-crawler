@@ -119,13 +119,13 @@ export function NoticePopup() {
               <div key={n.id} className="space-y-1">
                 <div className="flex items-start gap-2">
                   {badge === 'update' && (
-                    <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white"
+                    <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
                       style={{ backgroundColor: '#22c55e' }}>
                       NEW
                     </span>
                   )}
                   {badge === 'notice' && (
-                    <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white"
+                    <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
                       style={{ backgroundColor: '#1a1a1a' }}>
                       공지
                     </span>
