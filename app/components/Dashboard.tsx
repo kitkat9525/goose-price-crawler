@@ -156,7 +156,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 sm:space-y-10">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-12 sm:space-y-16">
 
         {/* ── 환율 ── */}
         <section id="sec-fx" className="border border-black/6 rounded-2xl px-5 py-4 space-y-4">
@@ -179,32 +179,32 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           </div>
         </section>
 
-        {/* ── CFD 규격 필터 탭 ── */}
-        <div id="sec-goose">
-          <SectionLabel title="표준 규격" sub="해당 규격에 맞춘 중국산 원자재의 가격입니다." subStyle={{ color: '#c0392b' }} />
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
-            {CFD_STANDARDS.map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => switchStandard(key)}
-                disabled={cfdLoading}
-                className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all whitespace-nowrap"
-                style={cfdStandard === key
-                  ? { backgroundColor: '#111', color: 'white', borderColor: '#111' }
-                  : { backgroundColor: 'white', color: 'rgba(0,0,0,0.45)', borderColor: 'rgba(0,0,0,0.12)' }
-                }
-              >
-                {label}
-              </button>
-            ))}
-            {cfdLoading && (
-              <span className="text-xs shrink-0 ml-2" style={{ color: 'rgba(0,0,0,0.3)' }}>로딩 중…</span>
-            )}
+        {/* ── 표준규격 + 거위털 + 오리털 ── */}
+        <div id="sec-goose" className="space-y-6">
+          <div>
+            <SectionLabel title="표준 규격" sub="해당 규격에 맞춘 중국산 원자재의 가격입니다." subStyle={{ color: '#c0392b' }} />
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+              {CFD_STANDARDS.map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => switchStandard(key)}
+                  disabled={cfdLoading}
+                  className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all whitespace-nowrap"
+                  style={cfdStandard === key
+                    ? { backgroundColor: '#111', color: 'white', borderColor: '#111' }
+                    : { backgroundColor: 'white', color: 'rgba(0,0,0,0.45)', borderColor: 'rgba(0,0,0,0.12)' }
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+              {cfdLoading && (
+                <span className="text-xs shrink-0 ml-2" style={{ color: 'rgba(0,0,0,0.3)' }}>로딩 중…</span>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* ── 거위털 + 오리털 (2컬럼) ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           <section style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
             <SectionLabel
               title="거위털 — Goose Down"
@@ -230,6 +230,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
               </div>
             </div>
           </section>
+          </div>
         </div>
 
         {/* ── 관세청 수입통계 ── */}
