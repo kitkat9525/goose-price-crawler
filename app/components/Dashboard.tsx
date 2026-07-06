@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { AggregatedData } from '@/app/lib/aggregate';
+import type { PriceData } from '@/app/lib/prices';
 import { CUSTOMS_HS_NOTE } from '@/app/lib/sources/customs';
 
 import {
@@ -64,8 +65,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
     router.push('/');
   }
 
-  const [cfdStandard, setCfdStandard] = useState<string>('服标');
-
   const CFD_STANDARDS = [
     { key: '服标', label: '중국의류표준' },
     { key: '寝标', label: '중국침구표준' },
@@ -75,9 +74,28 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
     { key: '日标', label: '일본표준' },
   ];
 
-  const { fx, cfd, customs } = data;
-  const goose = cfd.categories.filter(c => c.type === 'goose');
-  const duck  = cfd.categories.filter(c => c.type === 'duck');
+  const [cfdStandard, setCfdStandard] = useState<string>('服标');
+  const [cfdData, setCfdData] = useState<PriceData>(data.cfd);
+  const [cfdLoading, setCfdLoading] = useState(false);
+
+  async function switchStandard(key: string) {
+    if (key === cfdStandard) return;
+    setCfdStandard(key);
+    setCfdLoading(true);
+    try {
+      const res = await fetch(`/api/cfd?standard=${encodeURIComponent(key)}`);
+      const json: PriceData = await res.json();
+      setCfdData(json);
+    } catch {
+      // 실패 시 현재 데이터 유지
+    } finally {
+      setCfdLoading(false);
+    }
+  }
+
+  const { fx, customs } = data;
+  const goose = cfdData.categories.filter(c => c.type === 'goose');
+  const duck  = cfdData.categories.filter(c => c.type === 'duck');
 
   return (
     <div className="min-h-screen bg-white">
@@ -152,7 +170,8 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           {CFD_STANDARDS.map(({ key, label }) => (
             <button
               key={key}
-              onClick={() => setCfdStandard(key)}
+              onClick={() => switchStandard(key)}
+              disabled={cfdLoading}
               className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all whitespace-nowrap"
               style={cfdStandard === key
                 ? { backgroundColor: KEY, color: 'white', borderColor: KEY }
@@ -163,40 +182,30 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
               <span className="ml-1 opacity-40 text-[10px]">{key}</span>
             </button>
           ))}
+          {cfdLoading && <span className="text-xs text-black/30 ml-1">로딩 중…</span>}
         </div>
 
-        {cfdStandard !== '服标' ? (
-          <div className="border border-black/6 rounded-2xl px-5 py-10 text-center">
-            <p className="text-sm font-medium text-black/40">
-              {CFD_STANDARDS.find(s => s.key === cfdStandard)?.label} 데이터 준비 중
-            </p>
-            <p className="text-xs text-black/25 mt-1">현재 의류표준(服标) 데이터만 제공됩니다</p>
+        {/* 거위털 */}
+        <section id="sec-goose" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+          <SectionLabel title="거위털 — Goose Down" sub={`CFD · ${CFD_STANDARDS.find(s => s.key === cfdStandard)?.label} · 마지막 업데이트 ${cfdData.updatedAt}`} />
+          <div className="space-y-4">
+            <CfdBarChart categories={goose} currency={currency} fx={fx} label="거위털" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {goose.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
+            </div>
           </div>
-        ) : (
-          <>
-            {/* 거위털 */}
-            <section id="sec-goose">
-              <SectionLabel title="거위털 — Goose Down" sub={`CFD 중국우모협회 · 마지막 업데이트 ${cfd.updatedAt}`} />
-              <div className="space-y-4">
-                <CfdBarChart categories={goose} currency={currency} fx={fx} label="거위털" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {goose.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
-                </div>
-              </div>
-            </section>
+        </section>
 
-            {/* 오리털 */}
-            <section id="sec-duck">
-              <SectionLabel title="오리털 — Duck Down" sub={`CFD 중국우모협회 · 마지막 업데이트 ${cfd.updatedAt}`} />
-              <div className="space-y-4">
-                <CfdBarChart categories={duck} currency={currency} fx={fx} label="오리털" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {duck.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
-                </div>
-              </div>
-            </section>
-          </>
-        )}
+        {/* 오리털 */}
+        <section id="sec-duck" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+          <SectionLabel title="오리털 — Duck Down" sub={`CFD · ${CFD_STANDARDS.find(s => s.key === cfdStandard)?.label} · 마지막 업데이트 ${cfdData.updatedAt}`} />
+          <div className="space-y-4">
+            <CfdBarChart categories={duck} currency={currency} fx={fx} label="오리털" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {duck.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
+            </div>
+          </div>
+        </section>
 
         {/* 관세청 수입통계 */}
         <section id="sec-customs">
