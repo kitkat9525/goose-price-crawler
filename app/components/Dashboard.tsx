@@ -68,7 +68,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
   const CFD_STANDARDS = [
     { key: '服标', label: '중국의류표준' },
     { key: '寝标', label: '중국침구표준' },
-    { key: '国标', label: '국가표준' },
+    { key: '国标', label: '중국국가표준' },
     { key: '欧标', label: '유럽표준' },
     { key: '美标', label: '미국표준' },
     { key: '日标', label: '일본표준' },
@@ -166,7 +166,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
         {/* CFD 규격 필터 탭 */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
-          <span className="text-xs text-black/30 font-medium shrink-0 mr-0.5">CFD 규격</span>
           {CFD_STANDARDS.map(({ key, label }) => (
             <button
               key={key}
@@ -179,10 +178,11 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
               }
             >
               {label}
-              <span className="ml-1 opacity-40 text-[10px]">{key}</span>
             </button>
           ))}
-          {cfdLoading && <span className="text-xs text-black/30 ml-1">로딩 중…</span>}
+          <span className="text-xs text-black/30 font-medium shrink-0 ml-auto pl-2 whitespace-nowrap">
+            {cfdLoading ? '로딩 중…' : 'CFD 규격'}
+          </span>
         </div>
 
         {/* 거위털 */}
