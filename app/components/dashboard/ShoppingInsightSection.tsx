@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {
-  BarChart, Bar, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid,
+  LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { KEY } from './constants';
@@ -29,7 +29,7 @@ const AGE_LABEL:    Record<string, string> = {
   '10': '10대', '20': '20대', '30': '30대',
   '40': '40대', '50': '50대', '60': '60대+',
 };
-const INSIGHT_COLORS = ['#1a1a1a', '#555555'];
+const INSIGHT_COLORS = ['#111111', KEY];
 
 // ─── 유틸 ────────────────────────────────────────
 function aggregateByGroup(data: InsightBreakdown[]): InsightBreakdown[] {
@@ -45,77 +45,42 @@ function aggregateByGroup(data: InsightBreakdown[]): InsightBreakdown[] {
   }));
 }
 
-// ─── 기기별·성별 가로 바 차트 ────────────────────
-function MiniBarChart({ data, labelMap, height = 90 }: {
+// ─── 가로 바 차트 (기기별·성별·연령별 공용) ──────
+function HBarChart({ data, labelMap, colors }: {
   data: InsightBreakdown[];
   labelMap: Record<string, string>;
-  height?: number;
+  colors?: string[];
 }) {
   const mapped = data.map(d => ({
     name:  labelMap[d.group] ?? d.group,
     ratio: parseFloat(Number(d.ratio).toFixed(1)),
   }));
-  if (!mapped.length) return <p className="text-xs text-black/25 text-center py-4">데이터 없음</p>;
-  return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={mapped} layout="vertical" margin={{ top: 0, right: 40, left: 0, bottom: 0 }}>
-        <XAxis type="number" domain={[0, 100]} hide />
-        <YAxis type="category" dataKey="name" width={44}
-          tick={{ fontSize: 11, fill: 'rgba(0,0,0,0.45)' }} axisLine={false} tickLine={false}
-        />
-        <Tooltip
-          contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 11 }}
-          labelStyle={{ color: 'rgba(0,0,0,0.75)', fontWeight: 600 }}
-          itemStyle={{ fontWeight: 700 }}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          formatter={(v: any) => [`${v}%`, '비율']}
-          cursor={{ fill: 'rgba(0,0,0,0.03)' }}
-        />
-        <Bar dataKey="ratio" radius={[0, 3, 3, 0]}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          label={{ position: 'right', fontSize: 10, fill: 'rgba(0,0,0,0.4)', formatter: (v: any) => `${v}%` }}
-        >
-          {mapped.map((_, i) => <Cell key={i} fill={INSIGHT_COLORS[i % INSIGHT_COLORS.length]} />)}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  );
-}
+  const maxRatio = Math.max(...mapped.map(d => d.ratio), 1);
+  const palette = colors ?? INSIGHT_COLORS;
 
-// ─── 연령별 세로 바 차트 ─────────────────────────
-function AgeBarChart({ data }: { data: InsightBreakdown[] }) {
-  const mapped = data.map(d => ({
-    name:  AGE_LABEL[d.group] ?? d.group,
-    ratio: parseFloat(Number(d.ratio).toFixed(1)),
-  }));
   if (!mapped.length) return <p className="text-xs text-black/25 text-center py-4">데이터 없음</p>;
-  const maxRatio = Math.max(...mapped.map(d => d.ratio));
+
   return (
-    <ResponsiveContainer width="100%" height={130}>
-      <BarChart data={mapped} margin={{ top: 16, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid vertical={false} stroke="rgba(0,0,0,0.04)" />
-        <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'rgba(0,0,0,0.4)' }} axisLine={false} tickLine={false} />
-        <YAxis domain={[0, 100]} hide />
-        <Tooltip
-          contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 11 }}
-          labelStyle={{ color: 'rgba(0,0,0,0.75)', fontWeight: 600 }}
-          itemStyle={{ fontWeight: 700 }}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          formatter={(v: any) => [`${v}%`, '비율']}
-          cursor={{ fill: 'rgba(0,0,0,0.03)' }}
-        />
-        <Bar dataKey="ratio" radius={[3, 3, 0, 0]}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          label={{ position: 'top', fontSize: 10, fill: 'rgba(0,0,0,0.35)', formatter: (v: any) => `${v}%` }}
-        >
-          {mapped.map((d, i) => {
-            const intensity = maxRatio > 0 ? d.ratio / maxRatio : 0;
-            const alpha = Math.round(40 + intensity * 215).toString(16).padStart(2, '0');
-            return <Cell key={i} fill={`#AA8E5C${alpha}`} />;
-          })}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div className="flex flex-col gap-2">
+      {mapped.map((d, i) => (
+        <div key={d.name} className="flex items-center gap-2">
+          <span className="text-xs text-black/45 shrink-0" style={{ width: 44, textAlign: 'right' }}>{d.name}</span>
+          <div className="flex-1 h-5 rounded bg-black/[0.06] overflow-hidden">
+            <div
+              className="h-full rounded flex items-center transition-all duration-500"
+              style={{ width: `${d.ratio}%`, backgroundColor: palette[i % palette.length] }}
+            >
+              {d.ratio >= 12 && (
+                <span className="text-[10px] font-semibold text-white pl-2">{d.ratio}%</span>
+              )}
+            </div>
+          </div>
+          {d.ratio < 12 && (
+            <span className="text-[10px] font-semibold text-black/40 shrink-0">{d.ratio}%</span>
+          )}
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -210,22 +175,28 @@ export function ShoppingInsightSection() {
             }
           </div>
 
-          {/* 기기별 + 성별 */}
+          {/* 기기별 · 성별 · 연령별 */}
           <div className="grid grid-cols-2 border-t border-black/5">
-            <div className="px-5 py-4 border-r border-black/5">
-              <p className="text-xs font-semibold text-black/35 uppercase tracking-widest mb-2">기기별</p>
-              <MiniBarChart data={deviceData} labelMap={DEVICE_LABEL} height={80} />
+            {/* 좌: 기기별 + 성별 */}
+            <div className="px-5 py-4 border-r border-black/5 flex flex-col gap-5">
+              <div>
+                <p className="text-xs font-semibold text-black/35 uppercase tracking-widest mb-3">기기별</p>
+                <HBarChart data={deviceData} labelMap={DEVICE_LABEL} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-black/35 uppercase tracking-widest mb-3">성별</p>
+                <HBarChart data={genderData} labelMap={GENDER_LABEL} />
+              </div>
             </div>
+            {/* 우: 연령별 */}
             <div className="px-5 py-4">
-              <p className="text-xs font-semibold text-black/35 uppercase tracking-widest mb-2">성별</p>
-              <MiniBarChart data={genderData} labelMap={GENDER_LABEL} height={80} />
+              <p className="text-xs font-semibold text-black/35 uppercase tracking-widest mb-3">연령별</p>
+              <HBarChart
+                data={ageData}
+                labelMap={AGE_LABEL}
+                colors={[KEY, KEY, KEY, '#111', KEY, KEY]}
+              />
             </div>
-          </div>
-
-          {/* 연령별 */}
-          <div className="px-5 py-4 border-t border-black/5">
-            <p className="text-xs font-semibold text-black/35 uppercase tracking-widest mb-2">연령별</p>
-            <AgeBarChart data={ageData} />
           </div>
 
           {/* 푸터 */}
