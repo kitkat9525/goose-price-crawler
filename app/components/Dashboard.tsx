@@ -181,7 +181,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
             </button>
           ))}
           <span className="text-xs text-black/30 shrink-0 ml-auto pl-2">
-            {cfdLoading ? '로딩 중…' : '해당 국가의 실제 가격과 다를 수 있습니다.'}
+            {cfdLoading ? '로딩 중…' : '해당 규격에 맞춘 중국산 원자재의 가격입니다.'}
           </span>
         </div>
 
