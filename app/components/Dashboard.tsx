@@ -17,6 +17,7 @@ import { CustomsLineChart, CustomsTable } from './dashboard/CustomsSection';
 import { NewsSections }           from './dashboard/NewsSection';
 import { ShoppingSection }        from './dashboard/ShoppingSection';
 import { ShoppingInsightSection } from './dashboard/ShoppingInsightSection';
+import { NoticePopup }            from './dashboard/NoticePopup';
 
 export default function Dashboard({ data }: { data: AggregatedData }) {
   const router = useRouter();
@@ -69,6 +70,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
   return (
     <div className="min-h-screen bg-white">
+      <NoticePopup />
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
 
       {/* 헤더 */}
