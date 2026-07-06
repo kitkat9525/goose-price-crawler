@@ -46,29 +46,35 @@ function aggregateByGroup(data: InsightBreakdown[]): InsightBreakdown[] {
 }
 
 // ─── 가로 바 차트 (기기별·성별·연령별 공용) ──────
-function HBarChart({ data, labelMap, colors }: {
+function HBarChart({ data, labelMap, colors, highlightMax = false }: {
   data: InsightBreakdown[];
   labelMap: Record<string, string>;
   colors?: string[];
+  highlightMax?: boolean;
 }) {
   const mapped = data.map(d => ({
     name:  labelMap[d.group] ?? d.group,
     ratio: parseFloat(Number(d.ratio).toFixed(1)),
   }));
   const maxRatio = Math.max(...mapped.map(d => d.ratio), 1);
-  const palette = colors ?? INSIGHT_COLORS;
+  const maxIdx   = mapped.findIndex(d => d.ratio === maxRatio);
+  const palette  = colors ?? INSIGHT_COLORS;
 
   if (!mapped.length) return <p className="text-xs text-black/25 text-center py-4">데이터 없음</p>;
 
   return (
     <div className="flex flex-col gap-2">
-      {mapped.map((d, i) => (
+      {mapped.map((d, i) => {
+        const color = highlightMax
+          ? (i === maxIdx ? '#111111' : KEY)
+          : palette[i % palette.length];
+        return (
         <div key={d.name} className="flex items-center gap-2">
           <span className="text-xs text-black/45 shrink-0" style={{ width: 44, textAlign: 'right' }}>{d.name}</span>
           <div className="flex-1 h-5 rounded bg-black/[0.06] overflow-hidden">
             <div
               className="h-full rounded flex items-center transition-all duration-500"
-              style={{ width: `${d.ratio}%`, backgroundColor: palette[i % palette.length] }}
+              style={{ width: `${d.ratio}%`, backgroundColor: color }}
             >
               {d.ratio >= 12 && (
                 <span className="text-[10px] font-semibold text-white pl-2">{d.ratio}%</span>
@@ -79,7 +85,8 @@ function HBarChart({ data, labelMap, colors }: {
             <span className="text-[10px] font-semibold text-black/40 shrink-0">{d.ratio}%</span>
           )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -194,7 +201,7 @@ export function ShoppingInsightSection() {
               <HBarChart
                 data={ageData}
                 labelMap={AGE_LABEL}
-                colors={[KEY, KEY, KEY, '#111', KEY, KEY]}
+                highlightMax
               />
             </div>
           </div>
