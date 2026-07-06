@@ -180,7 +180,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
               {label}
             </button>
           ))}
-          <span className="text-xs text-black/30 shrink-0 ml-auto pl-2">
+          <span className="text-xs shrink-0 ml-auto pl-2" style={{ color: cfdLoading ? 'rgba(0,0,0,0.3)' : '#c0392b' }}>
             {cfdLoading ? '로딩 중…' : '해당 규격에 맞춘 중국산 원자재의 가격입니다.'}
           </span>
         </div>
