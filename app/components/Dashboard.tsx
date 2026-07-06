@@ -975,7 +975,8 @@ function MiniBarChart({
         />
         <Tooltip
           contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 11 }}
-          formatter={(v: number) => [`${v}%`, '비율']}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          formatter={(v: any) => [`${v}%`, '비율']}
           cursor={{ fill: 'rgba(0,0,0,0.03)' }}
         />
         <Bar dataKey="ratio" fill={KEY} radius={[0, 3, 3, 0]}
@@ -1003,7 +1004,8 @@ function AgeBarChart({ data }: { data: InsightBreakdown[] }) {
         <YAxis domain={[0, 100]} hide />
         <Tooltip
           contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 11 }}
-          formatter={(v: number) => [`${v}%`, '비율']}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          formatter={(v: any) => [`${v}%`, '비율']}
           cursor={{ fill: 'rgba(0,0,0,0.03)' }}
         />
         <Bar dataKey="ratio" fill={KEY} radius={[3, 3, 0, 0]}
