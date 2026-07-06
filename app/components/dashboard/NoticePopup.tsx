@@ -5,10 +5,10 @@ import { KEY, fmtKst } from './constants';
 
 interface Feedback { id: number; content: string; createdAt: string; }
 
-const NOTICE_KEY    = 'notice_seen_date';
-const UPDATE_RE     = /^\d{8}\s+업데이트\s*:\s*/;
-const NOTICE_RE     = /^\d{8}\s+공지사항\s*:\s*/;
-const EITHER_RE     = /^\d{8}\s+(업데이트|공지사항)\s*:\s*/;
+const NOTICE_KEY = 'notice_seen_date';
+const UPDATE_RE  = /^\d{8}\s+업데이트\s*:\s*/;
+const NOTICE_RE  = /^\d{8}\s+공지사항\s*:\s*/;
+const EITHER_RE  = /^\d{8}\s+(업데이트|공지사항)\s*:\s*/;
 
 type BadgeType = 'update' | 'notice' | null;
 
@@ -18,12 +18,25 @@ function parseNotice(content: string): { badge: BadgeType; body: string } {
   return { badge: null, body: content };
 }
 
+const SLIDE_UP = `
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+`;
+
 export function NoticePopup() {
-  const [notices, setNotices]   = useState<Feedback[]>([]);
-  const [visible, setVisible]   = useState(false);
+  const [notices, setNotices]     = useState<Feedback[]>([]);
+  const [visible, setVisible]     = useState(false);
   const [skipToday, setSkipToday] = useState(false);
+  const [isMobile, setIsMobile]   = useState(false);
 
   useEffect(() => {
+    setIsMobile(window.innerWidth < 640);
     const today = new Date().toISOString().slice(0, 10);
     if (localStorage.getItem(NOTICE_KEY) === today) return;
 
@@ -43,8 +56,7 @@ export function NoticePopup() {
 
   function close() {
     if (skipToday) {
-      const today = new Date().toISOString().slice(0, 10);
-      localStorage.setItem(NOTICE_KEY, today);
+      localStorage.setItem(NOTICE_KEY, new Date().toISOString().slice(0, 10));
     }
     setVisible(false);
   }
@@ -52,24 +64,47 @@ export function NoticePopup() {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
-      onClick={close}>
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+    <div
+      className="fixed inset-0 z-50 flex justify-center"
+      style={{ alignItems: isMobile ? 'flex-end' : 'center' }}
+      onClick={close}
+    >
+      <style>{SLIDE_UP}</style>
+
+      {/* 딤 */}
       <div
-        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+        style={{ animation: 'fade-in 0.2s ease' }}
+      />
+
+      {/* 패널 */}
+      <div
+        className="relative bg-white shadow-2xl w-full overflow-hidden"
+        style={isMobile ? {
+          maxWidth: '100%',
+          borderRadius: '20px 20px 0 0',
+          animation: 'sheet-up 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
+        } : {
+          maxWidth: '384px',
+          borderRadius: '16px',
+          animation: 'fade-in 0.2s ease',
+          margin: '16px',
+        }}
         onClick={e => e.stopPropagation()}
       >
+        {/* 모바일 핸들 */}
+        {isMobile && (
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="w-10 h-1 rounded-full bg-black/15" />
+          </div>
+        )}
+
         {/* 헤더 */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-black/6">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold tracking-widest uppercase" style={{ color: KEY }}>
-              공지사항
-            </span>
-          </div>
-          <button
-            onClick={close}
-            className="text-black/30 hover:text-black transition-colors p-1"
-          >
+          <span className="text-xs font-bold tracking-widest uppercase" style={{ color: KEY }}>
+            공지사항
+          </span>
+          <button onClick={close} className="text-black/30 hover:text-black transition-colors p-1">
             <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
               <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
@@ -104,7 +139,7 @@ export function NoticePopup() {
         </div>
 
         {/* 하단 */}
-        <div className="px-5 py-4 border-t border-black/5 space-y-3">
+        <div className="px-5 py-4 border-t border-black/5 space-y-3" style={{ paddingBottom: isMobile ? 'max(16px, env(safe-area-inset-bottom))' : '16px' }}>
           <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
             <input
               type="checkbox"
