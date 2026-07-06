@@ -74,6 +74,12 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
     { key: '日标', label: '일본표준',     tooltip: 'JIS L 1903' },
   ];
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+  useEffect(() => {
+    if (!activeTooltip) return;
+    const close = () => setActiveTooltip(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [activeTooltip]);
 
   const [cfdStandard, setCfdStandard] = useState<string>('服标');
   const [cfdData, setCfdData] = useState<PriceData>(data.cfd);
@@ -167,40 +173,44 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
         {/* CFD 규격 필터 탭 */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
-          {CFD_STANDARDS.map(({ key, label, tooltip }) => (
-            <div key={key} className="relative shrink-0 flex items-center">
-              <button
-                onClick={() => switchStandard(key)}
-                disabled={cfdLoading}
-                className="text-xs font-semibold px-3 py-1.5 rounded-full border transition-all whitespace-nowrap"
-                style={cfdStandard === key
-                  ? { backgroundColor: KEY, color: 'white', borderColor: KEY }
-                  : { backgroundColor: 'white', color: 'rgba(0,0,0,0.45)', borderColor: 'rgba(0,0,0,0.12)' }
-                }
-              >
-                {label}
-              </button>
-              {/* ? 버튼 */}
-              <button
-                onClick={e => { e.stopPropagation(); setActiveTooltip(activeTooltip === key ? null : key); }}
-                onMouseEnter={() => setActiveTooltip(key)}
-                onMouseLeave={() => setActiveTooltip(null)}
-                className="ml-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors"
-                style={{ backgroundColor: 'rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.4)' }}
-              >
-                ?
-              </button>
-              {/* 툴팁 */}
-              {activeTooltip === key && (
+          {CFD_STANDARDS.map(({ key, label, tooltip }) => {
+            const isActive = cfdStandard === key;
+            return (
+              <div key={key} className="relative shrink-0">
+                {/* 탭 전체: 클릭 시 탭 전환 */}
                 <div
-                  className="absolute top-full mt-1.5 left-0 z-50 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-pre text-white pointer-events-none"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.82)', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', lineHeight: 1.6 }}
+                  onClick={() => !cfdLoading && switchStandard(key)}
+                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all whitespace-nowrap cursor-pointer select-none"
+                  style={isActive
+                    ? { backgroundColor: KEY, color: 'white', borderColor: KEY }
+                    : { backgroundColor: 'white', color: 'rgba(0,0,0,0.45)', borderColor: 'rgba(0,0,0,0.12)' }
+                  }
                 >
-                  {tooltip}
+                  {label}
+                  {/* ? — 클릭 시 툴팁 토글, 탭 전환 막음 */}
+                  <span
+                    onClick={e => { e.stopPropagation(); setActiveTooltip(activeTooltip === key ? null : key); }}
+                    className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 cursor-pointer"
+                    style={isActive
+                      ? { backgroundColor: 'rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.85)' }
+                      : { backgroundColor: 'rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.4)' }
+                    }
+                  >
+                    ?
+                  </span>
                 </div>
-              )}
-            </div>
-          ))}
+                {/* 툴팁 */}
+                {activeTooltip === key && (
+                  <div
+                    className="absolute top-full mt-1.5 left-0 z-50 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-pre text-white"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.82)', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', lineHeight: 1.6 }}
+                  >
+                    {tooltip}
+                  </div>
+                )}
+              </div>
+            );
+          })}
           <span className="text-xs text-black/30 shrink-0 ml-auto pl-2">
             {cfdLoading ? '로딩 중…' : '해당 국가의 실제 가격과 다를 수 있습니다.'}
           </span>
