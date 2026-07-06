@@ -952,7 +952,7 @@ const AGE_LABEL:    Record<string, string> = {
 };
 
 // 차트 색상 — KEY 계열 + 보조색
-const INSIGHT_COLORS = ['#AA8E5C', '#4A7C6F', '#6B7280', '#8B5E3C', '#4A6B8B', '#7C6B8B'];
+const INSIGHT_COLORS = ['#1a1a1a', '#555555'];
 
 // 월별×그룹 형태 데이터 → 그룹별 평균으로 집계
 function aggregateByGroup(data: InsightBreakdown[]): InsightBreakdown[] {
