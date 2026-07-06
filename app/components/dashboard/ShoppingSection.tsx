@@ -100,7 +100,7 @@ function ShoppingPriceChart({ query }: { query: string }) {
         </div>
       </div>
       <ResponsiveContainer width="100%" height={130}>
-        <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+        <LineChart data={chartData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
           <XAxis dataKey="priceLabel" tick={{ fontSize: 10, fill: 'rgba(0,0,0,0.3)' }} tickLine={false} axisLine={false} />
           <YAxis hide />
@@ -289,22 +289,26 @@ function PriceDistSection() {
   return (
     <div id="sec-price-dist">
       <SectionLabel title="가격 분포" sub="상위 100개 기준 · 네이버 쇼핑" />
-      <div className="flex items-center gap-1.5 mb-5">
-        {SHOPPING_ITEMS.map(({ query, label }) => (
-          <button
-            key={query}
-            onClick={() => setActive(query)}
-            className="text-xs font-semibold px-3 py-1.5 rounded-full border transition-all"
-            style={active === query
-              ? { backgroundColor: KEY, color: '#fff', borderColor: KEY }
-              : { backgroundColor: 'white', color: 'rgba(0,0,0,0.45)', borderColor: 'rgba(0,0,0,0.12)' }
-            }
-          >
-            {label}
-          </button>
-        ))}
+      <div className="border border-black/8 rounded-2xl overflow-hidden">
+        <div className="px-5 py-3 border-b border-black/5 flex items-center gap-2">
+          {SHOPPING_ITEMS.map(({ query, label }) => (
+            <button
+              key={query}
+              onClick={() => setActive(query)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
+              style={active === query
+                ? { backgroundColor: KEY, color: '#fff' }
+                : { color: 'rgba(0,0,0,0.35)' }
+              }
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="px-5 pt-4 pb-5">
+          <ShoppingPriceChart query={active} />
+        </div>
       </div>
-      <ShoppingPriceChart query={active} />
     </div>
   );
 }
