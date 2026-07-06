@@ -10,22 +10,45 @@ import {
   KEY, KEY_BG, KEY_BORDER, SETTINGS_KEY, NAV_SECTIONS,
   Currency, CURRENCY_LABELS, CURRENCY_SYMBOLS,
 } from './dashboard/constants';
-import { SectionLabel }           from './dashboard/SectionLabel';
-import { FeedbackModal }          from './dashboard/FeedbackModal';
-import { FxBar }                  from './dashboard/FxBar';
-import { CategoryCard, CfdBarChart } from './dashboard/PriceSection';
+import { SectionLabel }                  from './dashboard/SectionLabel';
+import { FeedbackModal }                 from './dashboard/FeedbackModal';
+import { FxBar }                         from './dashboard/FxBar';
+import { CategoryCard, CfdBarChart }     from './dashboard/PriceSection';
 import { CustomsLineChart, CustomsTable } from './dashboard/CustomsSection';
-import { NewsSections }           from './dashboard/NewsSection';
-import { ShoppingSection }        from './dashboard/ShoppingSection';
-import { ShoppingInsightSection } from './dashboard/ShoppingInsightSection';
-import { NoticePopup }            from './dashboard/NoticePopup';
+import { NewsSections }                  from './dashboard/NewsSection';
+import { ShoppingSection }               from './dashboard/ShoppingSection';
+import { ShoppingInsightSection }        from './dashboard/ShoppingInsightSection';
+import { NoticePopup }                   from './dashboard/NoticePopup';
 
+// ─── CFD 규격 상수 ───────────────────────────────
+const CFD_STANDARDS = [
+  { key: '服标', label: '중국의류표준' },
+  { key: '寝标', label: '중국침구표준' },
+  { key: '国标', label: '중국국가표준' },
+  { key: '欧标', label: '유럽표준' },
+  { key: '美标', label: '미국표준' },
+  { key: '日标', label: '일본표준' },
+] as const;
+
+const CURRENCIES: Currency[] = ['CNY', 'USD', 'KRW', 'EUR'];
+
+// ─── 컴포넌트 ────────────────────────────────────
 export default function Dashboard({ data }: { data: AggregatedData }) {
   const router = useRouter();
-  const [currency, setCurrency]         = useState<Currency>('KRW');
+
+  // 통화 설정
+  const [currency, setCurrency] = useState<Currency>('KRW');
+
+  // UI 상태
   const [showFeedback, setShowFeedback] = useState(false);
   const [activeSection, setActiveSection] = useState('sec-fx');
 
+  // CFD 규격 탭 상태
+  const [cfdStandard, setCfdStandard] = useState<string>('服标');
+  const [cfdData, setCfdData] = useState<PriceData>(data.cfd);
+  const [cfdLoading, setCfdLoading] = useState(false);
+
+  // 로컬스토리지에서 통화 설정 복원
   useEffect(() => {
     try {
       const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}');
@@ -33,12 +56,13 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
     } catch {}
   }, []);
 
+  // 스크롤 위치에 따른 활성 섹션 추적
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
-        const visible = entries.filter(e => e.isIntersecting).sort(
-          (a, b) => a.boundingClientRect.top - b.boundingClientRect.top
-        );
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
         if (visible.length > 0) setActiveSection(visible[0].target.id);
       },
       { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
@@ -50,13 +74,15 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
     return () => observer.disconnect();
   }, []);
 
+  // ─── 핸들러 ──────────────────────────────────
   function scrollTo(id: string) {
     const el = document.getElementById(id);
     if (!el) return;
     window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
   }
 
-  function save(c: Currency) {
+  function saveCurrency(c: Currency) {
+    setCurrency(c);
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ currency: c })); } catch {}
   }
 
@@ -65,21 +91,8 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
     router.push('/');
   }
 
-  const CFD_STANDARDS = [
-    { key: '服标', label: '중국의류표준' },
-    { key: '寝标', label: '중국침구표준' },
-    { key: '国标', label: '중국국가표준' },
-    { key: '欧标', label: '유럽표준' },
-    { key: '美标', label: '미국표준' },
-    { key: '日标', label: '일본표준' },
-  ];
-
-  const [cfdStandard, setCfdStandard] = useState<string>('服标');
-  const [cfdData, setCfdData] = useState<PriceData>(data.cfd);
-  const [cfdLoading, setCfdLoading] = useState(false);
-
   async function switchStandard(key: string) {
-    if (key === cfdStandard) return;
+    if (key === cfdStandard || cfdLoading) return;
     setCfdStandard(key);
     setCfdLoading(true);
     try {
@@ -93,16 +106,18 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
     }
   }
 
+  // ─── 파생 데이터 ─────────────────────────────
   const { fx, customs } = data;
   const goose = cfdData.categories.filter(c => c.type === 'goose');
   const duck  = cfdData.categories.filter(c => c.type === 'duck');
+  const currentStandardLabel = CFD_STANDARDS.find(s => s.key === cfdStandard)?.label ?? '';
 
   return (
     <div className="min-h-screen bg-white">
       <NoticePopup />
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
 
-      {/* 헤더 */}
+      {/* ── 헤더 ── */}
       <header className="border-b border-black/6 px-4 sm:px-6 sticky top-0 bg-white/95 backdrop-blur-sm z-10">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 py-3">
           <h1 className="text-base sm:text-lg font-bold text-black tracking-tight shrink-0">구초뉴스</h1>
@@ -143,15 +158,15 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 sm:space-y-10">
 
-        {/* 환율 */}
+        {/* ── 환율 ── */}
         <section id="sec-fx" className="border border-black/6 rounded-2xl px-5 py-4 space-y-4">
           <FxBar fx={fx} />
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-black/30 font-medium mr-1">통화</span>
-            {(['CNY', 'USD', 'KRW', 'EUR'] as Currency[]).map(c => (
+            {CURRENCIES.map(c => (
               <button
                 key={c}
-                onClick={() => { setCurrency(c); save(c); }}
+                onClick={() => saveCurrency(c)}
                 className="text-xs font-semibold px-3 py-1.5 rounded-full border transition-all"
                 style={currency === c
                   ? { backgroundColor: KEY, color: 'white', borderColor: KEY }
@@ -164,7 +179,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           </div>
         </section>
 
-        {/* CFD 규격 필터 탭 */}
+        {/* ── CFD 규격 필터 탭 ── */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
           {CFD_STANDARDS.map(({ key, label }) => (
             <button
@@ -185,9 +200,12 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           </span>
         </div>
 
-        {/* 거위털 */}
+        {/* ── 거위털 ── */}
         <section id="sec-goose" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
-          <SectionLabel title="거위털 — Goose Down" sub={`CFD · ${CFD_STANDARDS.find(s => s.key === cfdStandard)?.label} · 마지막 업데이트 ${cfdData.updatedAt}`} />
+          <SectionLabel
+            title="거위털 — Goose Down"
+            sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}
+          />
           <div className="space-y-4">
             <CfdBarChart categories={goose} currency={currency} fx={fx} label="거위털" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -196,9 +214,12 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           </div>
         </section>
 
-        {/* 오리털 */}
+        {/* ── 오리털 ── */}
         <section id="sec-duck" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
-          <SectionLabel title="오리털 — Duck Down" sub={`CFD · ${CFD_STANDARDS.find(s => s.key === cfdStandard)?.label} · 마지막 업데이트 ${cfdData.updatedAt}`} />
+          <SectionLabel
+            title="오리털 — Duck Down"
+            sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}
+          />
           <div className="space-y-4">
             <CfdBarChart categories={duck} currency={currency} fx={fx} label="오리털" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -207,7 +228,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           </div>
         </section>
 
-        {/* 관세청 수입통계 */}
+        {/* ── 관세청 수입통계 ── */}
         <section id="sec-customs">
           <SectionLabel title="한국 수입 통계 — 관세청" sub="월별 집계 · 매월 15일경 업데이트" />
 
@@ -218,8 +239,11 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
                 <code className="bg-black/5 px-1 rounded">.env.local</code>에{' '}
                 <code className="bg-black/5 px-1 rounded">CUSTOMS_API_KEY</code> 추가 필요
               </p>
-              <a href="https://www.data.go.kr/data/15101609/openapi.do" target="_blank" rel="noopener noreferrer"
-                className="inline-block mt-2 text-xs text-black underline underline-offset-2">
+              <a
+                href="https://www.data.go.kr/data/15101609/openapi.do"
+                target="_blank" rel="noopener noreferrer"
+                className="inline-block mt-2 text-xs text-black underline underline-offset-2"
+              >
                 API 키 발급 →
               </a>
             </div>
@@ -252,16 +276,16 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           )}
         </section>
 
-        {/* 뉴스 */}
+        {/* ── 뉴스 ── */}
         <NewsSections />
 
-        {/* 쇼핑 */}
+        {/* ── 쇼핑트렌드 ── */}
         <ShoppingSection />
 
-        {/* 쇼핑인사이트 */}
+        {/* ── 쇼핑인사이트 ── */}
         <ShoppingInsightSection />
 
-        {/* 주의사항 */}
+        {/* ── 주의사항 ── */}
         <section className="text-xs text-black/20 space-y-1 pb-4 border-t border-black/5 pt-6">
           <p>· CFD 시세는 중국 내수 도매가 기준입니다. 실제 수입가는 물류비·관세·마진을 포함하여 다를 수 있습니다.</p>
           <p>· 환율은 open.er-api.com 기준이며, 실제 거래 환율과 차이가 있을 수 있습니다.</p>
@@ -269,7 +293,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
         </section>
       </main>
 
-      {/* 푸터 */}
+      {/* ── 푸터 ── */}
       <footer className="border-t border-black/6 px-6 py-5">
         <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs text-black/25">
           <div className="flex items-center gap-5">
