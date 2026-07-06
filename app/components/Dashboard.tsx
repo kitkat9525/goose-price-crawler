@@ -180,7 +180,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
         </section>
 
         {/* ── CFD 규격 필터 탭 ── */}
-        <div>
+        <div id="sec-goose">
           <SectionLabel title="표준 규격" sub="해당 규격에 맞춘 중국산 원자재의 가격입니다." subStyle={{ color: '#c0392b' }} />
           <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
             {CFD_STANDARDS.map(({ key, label }) => (
@@ -205,7 +205,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
         {/* ── 거위털 + 오리털 (2컬럼) ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          <section id="sec-goose" style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+          <section style={{ opacity: cfdLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
             <SectionLabel
               title="거위털 — Goose Down"
               sub={`CFD · ${currentStandardLabel} · 마지막 업데이트 ${cfdData.updatedAt}`}
