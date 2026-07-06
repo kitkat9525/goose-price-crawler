@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NewsItem } from '@/app/lib/types';
 import { parseRss } from '@/app/lib/utils/rss';
 
-export const revalidate = 3600;
+export const revalidate = 1800;
 
 // ──────────────────────────────────────────────
 // 네이버 뉴스 검색 API
@@ -144,7 +144,7 @@ async function fetchNaver(query: string, clientId: string, clientSecret: string)
         'X-Naver-Client-Id': clientId,
         'X-Naver-Client-Secret': clientSecret,
       },
-      next: { revalidate: 3600 },
+      next: { revalidate: 1800 },
     });
     if (!res.ok) return [];
     const json = await res.json();
@@ -167,7 +167,7 @@ async function fetchGoogleRss(query: string): Promise<NewsItem[]> {
   try {
     const res = await fetch(url, {
       headers: { 'User-Agent': 'Mozilla/5.0' },
-      next: { revalidate: 3600 },
+      next: { revalidate: 1800 },
     });
     if (!res.ok) return [];
     return parseRss(await res.text());
@@ -183,7 +183,7 @@ export async function GET() {
   const clientId     = process.env.NAVER_CLIENT_ID;
   const clientSecret = process.env.NAVER_CLIENT_SECRET;
 
-  const queries = ['거위털', '오리털', '구스이불'];
+  const queries = ['거위털', '오리털', '구스이불', '구스다운', '덕다운', '우모 수입', '침구 원자재'];
 
   let all: NewsItem[];
 
