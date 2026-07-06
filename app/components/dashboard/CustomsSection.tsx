@@ -43,6 +43,7 @@ export function CustomsLineChart({ months, currency, fxKrw, fxUsd, fxEur }: {
             <YAxis tick={{ fontSize: 11, fill: 'rgba(0,0,0,0.35)' }} axisLine={false} tickLine={false} tickFormatter={v => `${sym}${v}`} width={52} />
             <Tooltip
               contentStyle={tooltipStyle}
+              labelStyle={{ color: 'rgba(0,0,0,0.75)', fontWeight: 600 }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               formatter={(v: any) => [`${sym}${fmtNum(Number(v ?? 0), currency === 'KRW' ? 0 : 2)} ${unitLabel}`]}
               cursor={{ stroke: 'rgba(0,0,0,0.08)' }}
@@ -60,6 +61,7 @@ export function CustomsLineChart({ months, currency, fxKrw, fxUsd, fxEur }: {
             <YAxis tick={{ fontSize: 10, fill: 'rgba(0,0,0,0.3)' }} axisLine={false} tickLine={false} width={36} tickFormatter={v => `${v}t`} />
             <Tooltip
               contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, fontSize: 12 }}
+              labelStyle={{ color: 'rgba(0,0,0,0.75)', fontWeight: 600 }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               formatter={(v: any) => [`${v ?? 0}톤`]}
               cursor={{ fill: 'rgba(0,0,0,0.03)' }}

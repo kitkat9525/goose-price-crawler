@@ -65,6 +65,7 @@ function MiniBarChart({ data, labelMap, height = 90 }: {
         />
         <Tooltip
           contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 11 }}
+          labelStyle={{ color: 'rgba(0,0,0,0.75)', fontWeight: 600 }}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           formatter={(v: any) => [`${v}%`, '비율']}
           cursor={{ fill: 'rgba(0,0,0,0.03)' }}
@@ -96,6 +97,7 @@ function AgeBarChart({ data }: { data: InsightBreakdown[] }) {
         <YAxis domain={[0, 100]} hide />
         <Tooltip
           contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 11 }}
+          labelStyle={{ color: 'rgba(0,0,0,0.75)', fontWeight: 600 }}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           formatter={(v: any) => [`${v}%`, '비율']}
           cursor={{ fill: 'rgba(0,0,0,0.03)' }}
@@ -190,6 +192,7 @@ export function ShoppingInsightSection() {
                     <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: 'rgba(0,0,0,0.35)' }} axisLine={false} tickLine={false} width={28} />
                     <Tooltip
                       contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
+                      labelStyle={{ color: 'rgba(0,0,0,0.75)', fontWeight: 600 }}
                       labelFormatter={(_, payload) => payload?.[0]?.payload?.fullLabel ?? ''}
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       formatter={(v: any) => [v, '클릭 지수']}

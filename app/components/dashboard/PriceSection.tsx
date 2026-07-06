@@ -103,6 +103,7 @@ export function CfdBarChart({ categories, currency, fx, label }: {
             <YAxis tick={{ fontSize: 11, fill: 'rgba(0,0,0,0.35)' }} axisLine={false} tickLine={false} tickFormatter={v => `${sym}${v}`} width={56} />
             <Tooltip
               contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
+              labelStyle={{ color: 'rgba(0,0,0,0.75)', fontWeight: 600 }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               formatter={(v: any) => [`${sym}${fmtNum(Number(v ?? 0))}/kg`]}
               cursor={{ fill: 'rgba(0,0,0,0.03)' }}
