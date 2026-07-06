@@ -6,7 +6,12 @@ import { KEY, fmtKst } from './constants';
 interface Feedback { id: number; content: string; createdAt: string; }
 
 const NOTICE_KEY = 'notice_seen_date';
-const NOTICE_RE  = /^\d{8}\s+업데이트\s*:/;
+const NOTICE_RE  = /^\d{8}\s+업데이트\s*:\s*/;
+
+function parseNotice(content: string) {
+  const body = content.replace(NOTICE_RE, '').trim();
+  return { isUpdate: NOTICE_RE.test(content), body };
+}
 
 export function NoticePopup() {
   const [notices, setNotices] = useState<Feedback[]>([]);
@@ -45,7 +50,7 @@ export function NoticePopup() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-black/6">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold tracking-widest uppercase" style={{ color: KEY }}>
-              업데이트 공지
+              공지사항
             </span>
           </div>
           <button
@@ -60,12 +65,23 @@ export function NoticePopup() {
 
         {/* 공지 목록 */}
         <div className="px-5 py-4 max-h-72 overflow-y-auto space-y-3">
-          {notices.map(n => (
-            <div key={n.id} className="space-y-1">
-              <p className="text-sm font-medium text-black/85 leading-snug">{n.content}</p>
-              <p className="text-xs text-black/25">{fmtKst(n.createdAt)}</p>
-            </div>
-          ))}
+          {notices.map(n => {
+            const { isUpdate, body } = parseNotice(n.content);
+            return (
+              <div key={n.id} className="space-y-1">
+                <div className="flex items-start gap-2">
+                  {isUpdate && (
+                    <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white"
+                      style={{ backgroundColor: '#22c55e' }}>
+                      NEW
+                    </span>
+                  )}
+                  <p className="text-sm font-medium text-black/85 leading-snug">{body}</p>
+                </div>
+                <p className="text-xs text-black/25">{fmtKst(n.createdAt)}</p>
+              </div>
+            );
+          })}
         </div>
 
         {/* 확인 버튼 */}
