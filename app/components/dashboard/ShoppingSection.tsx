@@ -107,6 +107,7 @@ function ShoppingPriceChart({ query }: { query: string }) {
           <Tooltip
             contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.7)' }}
             labelStyle={{ color: 'rgba(0,0,0,0.75)', fontWeight: 600 }}
+            itemStyle={{ fontWeight: 700 }}
             formatter={(v) => [`${v ?? 0}개`, '상품 수']}
             labelFormatter={(l) => `가격대 ${l}`}
           />
