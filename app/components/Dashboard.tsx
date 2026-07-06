@@ -64,6 +64,17 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
     router.push('/');
   }
 
+  const [cfdStandard, setCfdStandard] = useState<string>('服标');
+
+  const CFD_STANDARDS = [
+    { key: '服标', label: '의류표준' },
+    { key: '寝标', label: '침구표준' },
+    { key: '国标', label: '국가표준' },
+    { key: '欧标', label: '유럽표준' },
+    { key: '美标', label: '미국표준' },
+    { key: '日标', label: '일본표준' },
+  ];
+
   const { fx, cfd, customs } = data;
   const goose = cfd.categories.filter(c => c.type === 'goose');
   const duck  = cfd.categories.filter(c => c.type === 'duck');
@@ -135,27 +146,57 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           </div>
         </section>
 
-        {/* 거위털 */}
-        <section id="sec-goose">
-          <SectionLabel title="거위털 — Goose Down" sub={`CFD 중국우모협회 · 마지막 업데이트 ${cfd.updatedAt}`} />
-          <div className="space-y-4">
-            <CfdBarChart categories={goose} currency={currency} fx={fx} label="거위털" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {goose.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
-            </div>
-          </div>
-        </section>
+        {/* CFD 규격 필터 탭 */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+          <span className="text-xs text-black/30 font-medium shrink-0 mr-0.5">CFD 규격</span>
+          {CFD_STANDARDS.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setCfdStandard(key)}
+              className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all whitespace-nowrap"
+              style={cfdStandard === key
+                ? { backgroundColor: KEY, color: 'white', borderColor: KEY }
+                : { backgroundColor: 'white', color: 'rgba(0,0,0,0.45)', borderColor: 'rgba(0,0,0,0.12)' }
+              }
+            >
+              {label}
+              <span className="ml-1 opacity-40 text-[10px]">{key}</span>
+            </button>
+          ))}
+        </div>
 
-        {/* 오리털 */}
-        <section id="sec-duck">
-          <SectionLabel title="오리털 — Duck Down" sub={`CFD 중국우모협회 · 마지막 업데이트 ${cfd.updatedAt}`} />
-          <div className="space-y-4">
-            <CfdBarChart categories={duck} currency={currency} fx={fx} label="오리털" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {duck.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
-            </div>
+        {cfdStandard !== '服标' ? (
+          <div className="border border-black/6 rounded-2xl px-5 py-10 text-center">
+            <p className="text-sm font-medium text-black/40">
+              {CFD_STANDARDS.find(s => s.key === cfdStandard)?.label} 데이터 준비 중
+            </p>
+            <p className="text-xs text-black/25 mt-1">현재 의류표준(服标) 데이터만 제공됩니다</p>
           </div>
-        </section>
+        ) : (
+          <>
+            {/* 거위털 */}
+            <section id="sec-goose">
+              <SectionLabel title="거위털 — Goose Down" sub={`CFD 중국우모협회 · 마지막 업데이트 ${cfd.updatedAt}`} />
+              <div className="space-y-4">
+                <CfdBarChart categories={goose} currency={currency} fx={fx} label="거위털" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {goose.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
+                </div>
+              </div>
+            </section>
+
+            {/* 오리털 */}
+            <section id="sec-duck">
+              <SectionLabel title="오리털 — Duck Down" sub={`CFD 중국우모협회 · 마지막 업데이트 ${cfd.updatedAt}`} />
+              <div className="space-y-4">
+                <CfdBarChart categories={duck} currency={currency} fx={fx} label="오리털" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {duck.map(cat => <CategoryCard key={cat.name} cat={cat} currency={currency} fx={fx} />)}
+                </div>
+              </div>
+            </section>
+          </>
+        )}
 
         {/* 관세청 수입통계 */}
         <section id="sec-customs">
