@@ -931,14 +931,92 @@ function ShoppingSection() {
 // ──────────────────────────────────────────────
 // 쇼핑인사이트
 // ──────────────────────────────────────────────
-interface InsightPoint { period: string; ratio: number; }
-interface InsightTrend { title: string; data: InsightPoint[]; }
-interface InsightData { source: 'live' | 'unavailable'; trends: InsightTrend[]; error?: string; }
+interface InsightPoint     { period: string; ratio: number; }
+interface InsightBreakdown { group: string;  ratio: number; }
+interface InsightTrend     { title: string;  data: InsightPoint[]; }
+interface InsightData {
+  source:  'live' | 'unavailable';
+  trends:  InsightTrend[];
+  device?: Record<string, InsightBreakdown[]>;
+  gender?: Record<string, InsightBreakdown[]>;
+  age?:    Record<string, InsightBreakdown[]>;
+  error?:  string;
+}
 
 const INSIGHT_KEYWORDS = ['구스이불', '구스베개', '구스토퍼'];
+const DEVICE_LABEL: Record<string, string> = { pc: 'PC', mo: '모바일' };
+const GENDER_LABEL: Record<string, string> = { f: '여성', m: '남성' };
+const AGE_LABEL:    Record<string, string> = {
+  '10': '10대', '20': '20대', '30': '30대',
+  '40': '40대', '50': '50대', '60': '60대+',
+};
+
+function MiniBarChart({
+  data, labelMap, height = 90,
+}: {
+  data: InsightBreakdown[];
+  labelMap: Record<string, string>;
+  height?: number;
+}) {
+  const mapped = data.map(d => ({
+    name:  labelMap[d.group] ?? d.group,
+    ratio: parseFloat(Number(d.ratio).toFixed(1)),
+  }));
+  if (!mapped.length) return (
+    <p className="text-xs text-black/25 text-center py-4">데이터 없음</p>
+  );
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart data={mapped} layout="vertical" margin={{ top: 0, right: 40, left: 0, bottom: 0 }}>
+        <XAxis type="number" domain={[0, 100]} hide />
+        <YAxis type="category" dataKey="name" width={44}
+          tick={{ fontSize: 11, fill: 'rgba(0,0,0,0.45)' }}
+          axisLine={false} tickLine={false}
+        />
+        <Tooltip
+          contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 11 }}
+          formatter={(v: number) => [`${v}%`, '비율']}
+          cursor={{ fill: 'rgba(0,0,0,0.03)' }}
+        />
+        <Bar dataKey="ratio" fill={KEY} radius={[0, 3, 3, 0]}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          label={{ position: 'right', fontSize: 10, fill: 'rgba(0,0,0,0.4)', formatter: (v: any) => `${v}%` }}
+        />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+function AgeBarChart({ data }: { data: InsightBreakdown[] }) {
+  const mapped = data.map(d => ({
+    name:  AGE_LABEL[d.group] ?? d.group,
+    ratio: parseFloat(Number(d.ratio).toFixed(1)),
+  }));
+  if (!mapped.length) return (
+    <p className="text-xs text-black/25 text-center py-4">데이터 없음</p>
+  );
+  return (
+    <ResponsiveContainer width="100%" height={130}>
+      <BarChart data={mapped} margin={{ top: 16, right: 8, left: 0, bottom: 0 }}>
+        <CartesianGrid vertical={false} stroke="rgba(0,0,0,0.04)" />
+        <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'rgba(0,0,0,0.4)' }} axisLine={false} tickLine={false} />
+        <YAxis domain={[0, 100]} hide />
+        <Tooltip
+          contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 11 }}
+          formatter={(v: number) => [`${v}%`, '비율']}
+          cursor={{ fill: 'rgba(0,0,0,0.03)' }}
+        />
+        <Bar dataKey="ratio" fill={KEY} radius={[3, 3, 0, 0]}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          label={{ position: 'top', fontSize: 10, fill: 'rgba(0,0,0,0.35)', formatter: (v: any) => `${v}%` }}
+        />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
 
 function ShoppingInsightSection() {
-  const [data, setData]     = useState<InsightData | null>(null);
+  const [data, setData]       = useState<InsightData | null>(null);
   const [loading, setLoading] = useState(true);
   const [active, setActive]   = useState(INSIGHT_KEYWORDS[0]);
 
@@ -949,12 +1027,15 @@ function ShoppingInsightSection() {
       .catch(() => setLoading(false));
   }, []);
 
-  const trend = data?.trends.find(t => t.title === active);
-  const chartData = (trend?.data ?? []).map(d => ({
-    label: d.period.slice(5, 7) + '월',   // "2025-10-01" → "10월"
-    fullLabel: d.period.slice(0, 7).replace('-', '.'), // "2025.10"
-    ratio: parseFloat(Number(d.ratio).toFixed(1)),
+  const trend      = data?.trends.find(t => t.title === active);
+  const chartData  = (trend?.data ?? []).map(d => ({
+    label:     d.period.slice(5, 7) + '월',
+    fullLabel: d.period.slice(0, 7).replace('-', '.'),
+    ratio:     parseFloat(Number(d.ratio).toFixed(1)),
   }));
+  const deviceData = data?.device?.[active] ?? [];
+  const genderData = data?.gender?.[active] ?? [];
+  const ageData    = data?.age?.[active]    ?? [];
 
   return (
     <section id="sec-insight" className="mb-10">
@@ -983,51 +1064,68 @@ function ShoppingInsightSection() {
 
       {!loading && data?.source === 'live' && (
         <div className="border border-black/8 rounded-2xl overflow-hidden">
-          {/* 탭 헤더 */}
-          <div className="px-5 py-4 border-b border-black/5 flex items-center justify-between">
-            <p className="text-xs font-semibold text-black/40 uppercase tracking-widest">월별 클릭 트렌드</p>
-            <div className="flex gap-1">
-              {INSIGHT_KEYWORDS.map(k => (
-                <button
-                  key={k}
-                  onClick={() => setActive(k)}
-                  className="text-xs font-semibold px-3 py-1 rounded-full transition-all"
-                  style={active === k
-                    ? { backgroundColor: KEY, color: '#fff' }
-                    : { color: 'rgba(0,0,0,0.35)' }
-                  }
-                >
-                  {k}
-                </button>
-              ))}
+
+          {/* 키워드 탭 */}
+          <div className="px-5 py-3 border-b border-black/5 flex items-center gap-2">
+            {INSIGHT_KEYWORDS.map(k => (
+              <button
+                key={k}
+                onClick={() => setActive(k)}
+                className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
+                style={active === k
+                  ? { backgroundColor: KEY, color: '#fff' }
+                  : { color: 'rgba(0,0,0,0.35)' }
+                }
+              >
+                {k}
+              </button>
+            ))}
+          </div>
+
+          {/* 월별 클릭 트렌드 */}
+          <div className="px-5 pt-5 pb-3">
+            <p className="text-xs font-semibold text-black/35 uppercase tracking-widest mb-3">월별 클릭 트렌드</p>
+            {chartData.length === 0
+              ? <p className="text-xs text-black/25 text-center py-6">데이터 없음</p>
+              : (
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid vertical={false} stroke="rgba(0,0,0,0.05)" />
+                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'rgba(0,0,0,0.35)' }} axisLine={false} tickLine={false} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: 'rgba(0,0,0,0.35)' }} axisLine={false} tickLine={false} width={28} />
+                    <Tooltip
+                      contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
+                      labelFormatter={(_, payload) => payload?.[0]?.payload?.fullLabel ?? ''}
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      formatter={(v: any) => [v, '클릭 지수']}
+                      cursor={{ stroke: 'rgba(0,0,0,0.08)' }}
+                    />
+                    <Line type="monotone" dataKey="ratio" stroke={KEY} strokeWidth={2}
+                      dot={{ r: 4, fill: KEY, strokeWidth: 0 }}
+                      activeDot={{ r: 5, fill: KEY }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )
+            }
+          </div>
+
+          {/* 기기별 + 성별 */}
+          <div className="grid grid-cols-2 border-t border-black/5">
+            <div className="px-5 py-4 border-r border-black/5">
+              <p className="text-xs font-semibold text-black/35 uppercase tracking-widest mb-2">기기별</p>
+              <MiniBarChart data={deviceData} labelMap={DEVICE_LABEL} height={80} />
+            </div>
+            <div className="px-5 py-4">
+              <p className="text-xs font-semibold text-black/35 uppercase tracking-widest mb-2">성별</p>
+              <MiniBarChart data={genderData} labelMap={GENDER_LABEL} height={80} />
             </div>
           </div>
 
-          {/* 차트 */}
-          <div className="px-4 py-5">
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="rgba(0,0,0,0.05)" />
-                <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'rgba(0,0,0,0.35)' }} axisLine={false} tickLine={false} />
-                <YAxis
-                  domain={[0, 100]}
-                  tick={{ fontSize: 11, fill: 'rgba(0,0,0,0.35)' }}
-                  axisLine={false} tickLine={false} width={28}
-                />
-                <Tooltip
-                  contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
-                  labelFormatter={(_, payload) => payload?.[0]?.payload?.fullLabel ?? ''}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  formatter={(v: any) => [v, '클릭 지수']}
-                  cursor={{ stroke: 'rgba(0,0,0,0.08)' }}
-                />
-                <Line
-                  type="monotone" dataKey="ratio" stroke={KEY} strokeWidth={2}
-                  dot={{ r: 4, fill: KEY, strokeWidth: 0 }}
-                  activeDot={{ r: 5, fill: KEY }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          {/* 연령별 */}
+          <div className="px-5 py-4 border-t border-black/5">
+            <p className="text-xs font-semibold text-black/35 uppercase tracking-widest mb-2">연령별</p>
+            <AgeBarChart data={ageData} />
           </div>
 
           {/* 푸터 */}
