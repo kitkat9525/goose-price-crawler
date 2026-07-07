@@ -18,6 +18,7 @@ import { CustomsLineChart, CustomsTable } from './dashboard/CustomsSection';
 import { NewsSections }                  from './dashboard/NewsSection';
 import { ShoppingSection }               from './dashboard/ShoppingSection';
 import { ShoppingInsightSection }        from './dashboard/ShoppingInsightSection';
+import { YoutubeSection }               from './dashboard/YoutubeSection';
 import { NoticePopup }                   from './dashboard/NoticePopup';
 
 // ─── CFD 규격 상수 ───────────────────────────────
@@ -289,6 +290,9 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
         {/* ── 쇼핑인사이트 ── */}
         <ShoppingInsightSection />
+
+        {/* ── SNS 인사이트 ── */}
+        <YoutubeSection />
 
         {/* ── 주의사항 ── */}
         <section className="text-xs text-black/20 space-y-1 pb-4 border-t border-black/5 pt-6">
