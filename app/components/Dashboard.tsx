@@ -133,10 +133,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           >
             {/* 헤더 */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-black/8">
-              <div>
-                <h2 className="text-sm font-bold text-black">구초뉴스 도움말</h2>
-                <p className="text-xs text-black/40 mt-0.5">구스·오리털 업계 데이터를 한눈에 보는 대시보드입니다</p>
-              </div>
+              <h2 className="text-sm font-bold text-black">구초뉴스 도움말</h2>
               <button onClick={() => setShowHelp(false)} className="text-black/25 hover:text-black transition-colors text-lg leading-none ml-4">✕</button>
             </div>
 
@@ -163,18 +160,17 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
                   desc: '중국 CFD(중국우융공업협회 가격 플랫폼) 기준 거위털·오리털 원자재 가격입니다. 상단 탭에서 규격을 선택하면 해당 규격의 가격을 확인할 수 있습니다.',
                   extra: (
                     <div className="mt-3 rounded-lg p-3 space-y-2" style={{ backgroundColor: 'rgba(0,0,0,0.03)' }}>
-                      <p className="text-[11px] font-semibold text-black/70">⚠️ CFD 가격이란?</p>
-                      <p className="text-[11px] text-black/55 leading-relaxed">
-                        CFD에서 제공하는 가격은 <strong>해당 규격에 맞춰 생산한 중국산 원자재의 가격</strong>입니다. 유럽표준·미국표준이라도 유럽·미국산 원자재 가격이 아니라, 중국에서 그 기준에 맞게 생산한 제품의 중국 내 도매가입니다.
+                      <p className="text-[11px] text-black/70 leading-relaxed">
+                        ⚠️ 해당 규격에 맞춰 생산한 <strong>중국산 원자재의 가격</strong>입니다.
                       </p>
                       <div className="space-y-1.5 pt-1">
                         {[
-                          { key: '服标 (중국의류표준)', desc: 'FZ/T 80001 — 중국 섬유공업연합회가 제정한 의류용 다운 기준입니다. 패딩점퍼 등 의류에 충전재로 사용되는 원자재에 적용되며, 솜털 함유율과 충전력(필파워) 등을 규정합니다.' },
-                          { key: '寝标 (중국침구표준)', desc: 'QB/T 1193 — 이불·베개·토퍼 등 침구류에 사용되는 다운 기준입니다. 의류표준보다 위생·세탁 관련 요건이 더 엄격하게 적용되는 경향이 있습니다.' },
-                          { key: '国标 (중국국가표준)', desc: 'GB/T 17685 — 중국 국가표준화관리위원회(SAC)가 제정한 가장 공식적인 다운 국가표준입니다. 2026년 최신 개정판이 발표되었으며, 솜털 함유율·청결도·산소지수 등을 종합적으로 규정합니다.' },
-                          { key: '欧标 (유럽표준)', desc: 'EN 12935 / EN 13186 — 유럽 시장 수출에 필요한 기준입니다. 알레르기 유발 물질, 위생 기준, 충전력 측정 방식이 중국 기준과 다르며, 유럽으로 수출하는 제품에 주로 요구됩니다.' },
-                          { key: '美标 (미국표준)', desc: 'IDFL / FTC 가이드라인 — 미국연방무역위원회(FTC)의 다운 라벨링 규정과 IDFL(국제우융우모검측실험실) 기준을 따릅니다. 미국 시장 수출 제품에 적용됩니다.' },
-                          { key: '日标 (일본표준)', desc: 'JIS L 1903 — 일본산업규격(JIS)의 다운·깃털 제품 기준입니다. 일본은 특히 청결도와 솜털 함유율 기준이 엄격하기로 유명하며, 일본 수출 제품에 요구됩니다.' },
+                          { key: '중국의류표준', desc: 'FZ/T 80001 — 중국 섬유공업연합회가 제정한 의류용 다운 기준입니다. 패딩점퍼 등 의류에 충전재로 사용되는 원자재에 적용되며, 솜털 함유율과 충전력(필파워) 등을 규정합니다.' },
+                          { key: '중국침구표준', desc: 'QB/T 1193 — 이불·베개·토퍼 등 침구류에 사용되는 다운 기준입니다. 의류표준보다 위생·세탁 관련 요건이 더 엄격하게 적용되는 경향이 있습니다.' },
+                          { key: '중국국가표준', desc: 'GB/T 17685 — 중국 국가표준화관리위원회(SAC)가 제정한 가장 공식적인 다운 국가표준입니다. 2026년 최신 개정판이 발표되었으며, 솜털 함유율·청결도·산소지수 등을 종합적으로 규정합니다.' },
+                          { key: '유럽표준', desc: 'EN 12935 / EN 13186 — 유럽 시장 수출에 필요한 기준입니다. 알레르기 유발 물질, 위생 기준, 충전력 측정 방식이 중국 기준과 다르며, 유럽으로 수출하는 제품에 주로 요구됩니다.' },
+                          { key: '미국표준', desc: 'IDFL / FTC 가이드라인 — 미국연방무역위원회(FTC)의 다운 라벨링 규정과 IDFL(국제우융우모검측실험실) 기준을 따릅니다. 미국 시장 수출 제품에 적용됩니다.' },
+                          { key: '일본표준', desc: 'JIS L 1903 — 일본산업규격(JIS)의 다운·깃털 제품 기준입니다. 일본은 특히 청결도와 솜털 함유율 기준이 엄격하기로 유명하며, 일본 수출 제품에 요구됩니다.' },
                         ].map(s => (
                           <div key={s.key}>
                             <p className="text-[10px] font-semibold text-black/60">{s.key}</p>
@@ -211,7 +207,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
                 },
               ].map(({ label, desc, extra }) => (
                 <div key={label} className="flex gap-3">
-                  <span className="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full h-fit mt-0.5" style={{ backgroundColor: 'rgba(170,142,92,0.1)', color: KEY }}>{label}</span>
+                  <span className="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full h-fit mt-0.5 text-center" style={{ backgroundColor: 'rgba(170,142,92,0.1)', color: KEY, minWidth: 72 }}>{label}</span>
                   <div className="flex-1">
                     <p className="text-xs text-black/55 leading-relaxed">{desc}</p>
                     {extra}
