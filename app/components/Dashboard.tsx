@@ -139,7 +139,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
             </div>
             <div style={{ height: 'calc(100% - 49px)', overflow: 'hidden', position: 'relative' }}>
               <iframe
-                src="https://goosechoi.com/review"
+                src="/api/review-proxy?path=/review"
                 style={{
                   width: 1280,
                   height: '100%',
