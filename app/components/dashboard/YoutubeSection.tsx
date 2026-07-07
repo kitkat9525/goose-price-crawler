@@ -72,8 +72,14 @@ function VideoCard({ item }: { item: YoutubeItem }) {
   );
 }
 
+const DURATION_OPTIONS = [
+  { value: '',       label: '전체' },
+  { value: 'medium', label: '쇼츠 제외 (4분+)' },
+  { value: 'long',   label: '장편 (20분+)' },
+];
+
 // ─── 캐러셀 ──────────────────────────────────────
-function YoutubeCarousel() {
+function YoutubeCarousel({ duration }: { duration: string }) {
   const [items, setItems]           = useState<YoutubeItem[]>([]);
   const [loading, setLoading]       = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -85,7 +91,10 @@ function YoutubeCarousel() {
   const [canScrollRight, setCanScrollRight] = useState(false);
 
   useEffect(() => {
-    fetch('/api/youtube')
+    setItems([]); setLoading(true); setHasMore(true); setError(false);
+    pageTokenRef.current = null;
+    const qs = duration ? `?duration=${duration}` : '';
+    fetch(`/api/youtube${qs}`)
       .then(r => r.json())
       .then(d => {
         if (d.source === 'live') {
@@ -98,12 +107,13 @@ function YoutubeCarousel() {
         setLoading(false);
       })
       .catch(() => { setError(true); setLoading(false); });
-  }, []);
+  }, [duration]);
 
   const loadMore = useCallback(() => {
     if (loadingMore || !hasMore || !pageTokenRef.current) return;
     setLoadingMore(true);
-    fetch(`/api/youtube?pageToken=${encodeURIComponent(pageTokenRef.current)}`)
+    const qs = duration ? `&duration=${duration}` : '';
+    fetch(`/api/youtube?pageToken=${encodeURIComponent(pageTokenRef.current)}${qs}`)
       .then(r => r.json())
       .then(d => {
         if (d.source === 'live') {
@@ -114,7 +124,7 @@ function YoutubeCarousel() {
       })
       .catch(() => {})
       .finally(() => setLoadingMore(false));
-  }, [loadingMore, hasMore]);
+  }, [loadingMore, hasMore, duration]);
 
   const updateScrollState = useCallback(() => {
     const el = scrollRef.current;
@@ -202,10 +212,24 @@ function YoutubeCarousel() {
 
 // ─── 메인 섹션 ───────────────────────────────────
 export function YoutubeSection() {
+  const [duration, setDuration] = useState('');
+
   return (
     <section id="sec-sns">
-      <SectionLabel title="SNS 인사이트" sub="구스이불 · 유튜브 인기 영상" />
-      <YoutubeCarousel />
+      <div className="flex items-center justify-between">
+        <SectionLabel title="SNS 인사이트" sub="구스이불 · 유튜브 최신 영상" />
+        <select
+          value={duration}
+          onChange={e => setDuration(e.target.value)}
+          className="text-xs font-medium rounded-full border px-3 py-1.5 outline-none transition-all"
+          style={{ borderColor: 'rgba(0,0,0,0.12)', color: 'rgba(0,0,0,0.55)', backgroundColor: 'white' }}
+        >
+          {DURATION_OPTIONS.map(o => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </div>
+      <YoutubeCarousel duration={duration} />
       <p className="text-xs text-black/25 mt-4">출처: YouTube Data API v3</p>
     </section>
   );
