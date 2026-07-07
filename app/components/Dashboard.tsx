@@ -41,7 +41,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
   // UI 상태
   const [showFeedback, setShowFeedback] = useState(false);
-  const [showReview, setShowReview] = useState(false);
   const [activeSection, setActiveSection] = useState('sec-fx');
 
   // CFD 규격 탭 상태
@@ -118,45 +117,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
       <NoticePopup />
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
 
-      {/* ── 고객후기 팝업 ── */}
-      {showReview && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-          onClick={() => setShowReview(false)}
-        >
-          <div
-            className="relative bg-white rounded-2xl overflow-hidden shadow-2xl w-full"
-            style={{ maxWidth: 960, height: '80vh' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-5 py-3 border-b border-black/8">
-              <span className="text-sm font-semibold text-black/70">고객 후기</span>
-              <button
-                onClick={() => setShowReview(false)}
-                className="text-black/30 hover:text-black transition-colors text-lg leading-none"
-              >✕</button>
-            </div>
-            <div style={{ height: 'calc(100% - 49px)', overflow: 'hidden', position: 'relative' }}>
-              <iframe
-                src="/api/review-proxy?path=/review"
-                style={{
-                  width: 1280,
-                  height: '100%',
-                  border: 'none',
-                  transform: 'scale(0.75)',
-                  transformOrigin: 'top left',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                }}
-                title="고객 후기"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── 헤더 ── */}
       <header className="border-b border-black/6 px-4 sm:px-6 sticky top-0 bg-white/95 backdrop-blur-sm z-10">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 py-3">
@@ -192,14 +152,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
                 {label}
               </button>
             ))}
-            <div className="w-px h-3 bg-black/10 mx-1 shrink-0" />
-            <button
-              onClick={() => setShowReview(true)}
-              className="shrink-0 text-xs font-semibold px-3 py-1 rounded-full transition-all whitespace-nowrap"
-              style={{ color: 'rgba(0,0,0,0.35)', backgroundColor: 'transparent' }}
-            >
-              구스초이 고객후기
-            </button>
           </nav>
         </div>
       </header>
