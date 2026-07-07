@@ -137,12 +137,22 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
                 className="text-black/30 hover:text-black transition-colors text-lg leading-none"
               >✕</button>
             </div>
-            <iframe
-              src="https://goosechoi.com/review"
-              className="w-full"
-              style={{ height: 'calc(100% - 49px)', border: 'none' }}
-              title="고객 후기"
-            />
+            <div style={{ height: 'calc(100% - 49px)', overflow: 'hidden', position: 'relative' }}>
+              <iframe
+                src="https://goosechoi.com/review"
+                style={{
+                  width: 1280,
+                  height: '100%',
+                  border: 'none',
+                  transform: 'scale(0.75)',
+                  transformOrigin: 'top left',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                }}
+                title="고객 후기"
+              />
+            </div>
           </div>
         </div>
       )}
@@ -188,7 +198,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
               className="shrink-0 text-xs font-semibold px-3 py-1 rounded-full transition-all whitespace-nowrap"
               style={{ color: 'rgba(0,0,0,0.35)', backgroundColor: 'transparent' }}
             >
-              고객후기 바로가기 ↗
+              구스초이 고객후기
             </button>
           </nav>
         </div>
