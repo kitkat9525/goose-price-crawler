@@ -148,9 +148,10 @@ function YoutubeCarousel() {
     return <p className="text-xs text-black/30 py-4">영상을 불러오지 못했습니다.</p>;
   }
 
-  // 2열 그리드: 아이템을 홀수/짝수로 나눠 위아래 두 줄
-  const row1 = items.filter((_, i) => i % 2 === 0);
-  const row2 = items.filter((_, i) => i % 2 === 1);
+  // 3열 그리드: 아이템을 3개 행으로 분배
+  const row1 = items.filter((_, i) => i % 3 === 0);
+  const row2 = items.filter((_, i) => i % 3 === 1);
+  const row3 = items.filter((_, i) => i % 3 === 2);
 
   return (
     <div className="flex items-center gap-2">
@@ -170,7 +171,7 @@ function YoutubeCarousel() {
         className="flex-1 overflow-x-auto pb-2 flex flex-col gap-3"
         style={{ scrollSnapType: 'x mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {/* 상단 열 */}
+        {/* 1열 */}
         <div className="flex gap-3">
           {row1.map((item) => <VideoCard key={item.videoId + '-r1'} item={item} />)}
           {loadingMore && Array.from({ length: 2 }).map((_, i) => <SkeletonCard key={`skel-r1-${i}`} />)}
@@ -178,10 +179,15 @@ function YoutubeCarousel() {
             <div className="w-12 shrink-0 flex items-center justify-center text-black/20 text-xs">끝</div>
           )}
         </div>
-        {/* 하단 열 */}
+        {/* 2열 */}
         <div className="flex gap-3">
           {row2.map((item) => <VideoCard key={item.videoId + '-r2'} item={item} />)}
           {loadingMore && Array.from({ length: 2 }).map((_, i) => <SkeletonCard key={`skel-r2-${i}`} />)}
+        </div>
+        {/* 3열 */}
+        <div className="flex gap-3">
+          {row3.map((item) => <VideoCard key={item.videoId + '-r3'} item={item} />)}
+          {loadingMore && Array.from({ length: 2 }).map((_, i) => <SkeletonCard key={`skel-r3-${i}`} />)}
         </div>
       </div>
 
