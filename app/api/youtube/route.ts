@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     url.searchParams.set('q', QUERY);
     url.searchParams.set('type', 'video');
     url.searchParams.set('maxResults', String(MAX_RESULTS));
-    url.searchParams.set('order', 'relevance');
+    url.searchParams.set('order', 'date');
     url.searchParams.set('relevanceLanguage', 'ko');
     url.searchParams.set('key', apiKey);
     if (pageToken) url.searchParams.set('pageToken', pageToken);
