@@ -152,6 +152,14 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
                 {label}
               </button>
             ))}
+            <div className="w-px h-3 bg-black/10 mx-1 shrink-0" />
+            <button
+              onClick={() => window.open('https://goosechoi.com/review', '_blank', 'width=960,height=700,noopener,noreferrer')}
+              className="shrink-0 text-xs font-semibold px-3 py-1 rounded-full transition-all whitespace-nowrap border"
+              style={{ color: KEY, borderColor: 'rgba(170,142,92,0.3)', backgroundColor: 'rgba(170,142,92,0.06)' }}
+            >
+              고객후기 바로가기 ↗
+            </button>
           </nav>
         </div>
       </header>
