@@ -42,6 +42,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
   // UI 상태
   const [showFeedback, setShowFeedback] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [activeSection, setActiveSection] = useState('sec-fx');
 
   // CFD 규격 탭 상태
@@ -118,6 +119,88 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
       <NoticePopup />
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
 
+      {/* ── 도움말 팝업 ── */}
+      {showHelp && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
+          onClick={() => setShowHelp(false)}
+        >
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl w-full overflow-hidden"
+            style={{ maxWidth: 560, maxHeight: '85vh' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* 헤더 */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-black/8">
+              <div>
+                <h2 className="text-sm font-bold text-black">구초뉴스 도움말</h2>
+                <p className="text-xs text-black/40 mt-0.5">구스·오리털 업계 데이터를 한눈에 보는 대시보드입니다</p>
+              </div>
+              <button onClick={() => setShowHelp(false)} className="text-black/25 hover:text-black transition-colors text-lg leading-none ml-4">✕</button>
+            </div>
+
+            {/* 본문 */}
+            <div className="overflow-y-auto px-6 py-5 space-y-5" style={{ maxHeight: 'calc(85vh - 73px)' }}>
+
+              {/* 사이트 소개 */}
+              <div className="rounded-xl p-4" style={{ backgroundColor: 'rgba(170,142,92,0.06)', border: '1px solid rgba(170,142,92,0.2)' }}>
+                <p className="text-xs font-semibold mb-1" style={{ color: KEY }}>이 사이트는 무엇인가요?</p>
+                <p className="text-xs text-black/60 leading-relaxed">
+                  구스·오리털 제품을 수입하거나 판매하는 분들을 위한 정보 모음 페이지입니다.
+                  중국 원자재 가격부터 국내 소비자 쇼핑 트렌드까지, 업무에 필요한 핵심 데이터를 매일 자동으로 수집해 보여줍니다.
+                </p>
+              </div>
+
+              {/* 섹션별 설명 */}
+              {[
+                {
+                  label: '환율',
+                  desc: '오늘의 환율 정보입니다. 중국 위안(CNY), 미국 달러(USD), 유럽 유로(EUR)를 원화로 환산한 값을 보여줍니다. 원자재 수입 비용 계산에 활용하세요.',
+                },
+                {
+                  label: '구스 · 덕다운',
+                  desc: '중국 CFD(깃털 거래소) 기준 거위털·오리털 원자재 가격입니다. 상단 탭에서 중국의류표준, 유럽표준 등 규격을 선택하면 해당 규격의 가격을 확인할 수 있습니다.',
+                },
+                {
+                  label: '수입통계',
+                  desc: '관세청에서 제공하는 국내 깃털·솜털 수입 통계입니다. 월별 수입량과 금액 추이를 그래프와 표로 확인할 수 있어 시장 흐름을 파악하는 데 도움이 됩니다.',
+                },
+                {
+                  label: '뉴스',
+                  desc: '구스·오리털 관련 국내외 뉴스를 자동으로 모아 보여줍니다. 국내 언론사 뉴스와 해외 영문 뉴스를 나란히 볼 수 있습니다.',
+                },
+                {
+                  label: '쇼핑트렌드',
+                  desc: '네이버 쇼핑에서 구스이불·베개·토퍼 상품의 최신 인기 상품을 보여줍니다. 어떤 제품이 잘 팔리는지, 가격대는 어떤지 파악할 수 있습니다.',
+                },
+                {
+                  label: '가격분포',
+                  desc: '네이버 쇼핑 상위 100개 상품의 가격을 구간별로 나눠 그래프로 표시합니다. 시장에서 어느 가격대에 상품이 가장 많이 몰려 있는지 한눈에 볼 수 있습니다.',
+                },
+                {
+                  label: '쇼핑인사이트',
+                  desc: '네이버 쇼핑인사이트 데이터입니다. 소비자들이 구스이불·베개·토퍼를 얼마나 클릭하는지, 어떤 연령대·성별·기기에서 많이 검색하는지 보여줍니다.',
+                },
+                {
+                  label: 'SNS인사이트',
+                  desc: '유튜브에서 구스이불 관련 최신 영상을 자동으로 가져옵니다. 소비자들이 어떤 콘텐츠에 관심을 갖고 있는지 파악하는 데 활용하세요.',
+                },
+              ].map(({ label, desc }) => (
+                <div key={label} className="flex gap-3">
+                  <span className="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full h-fit mt-0.5" style={{ backgroundColor: 'rgba(170,142,92,0.1)', color: KEY }}>{label}</span>
+                  <p className="text-xs text-black/55 leading-relaxed">{desc}</p>
+                </div>
+              ))}
+
+              <p className="text-[10px] text-black/25 pt-2 border-t border-black/5">
+                데이터는 자동으로 수집되며, 일부 항목은 API 상황에 따라 표시되지 않을 수 있습니다.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── 헤더 ── */}
       <header className="border-b border-black/6 px-4 sm:px-6 sticky top-0 bg-white/95 backdrop-blur-sm z-10">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 py-3">
@@ -129,6 +212,12 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
               style={{ backgroundColor: KEY_BG, color: KEY, borderColor: KEY_BORDER }}
             >
               의견보내기
+            </button>
+            <button
+              onClick={() => setShowHelp(true)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-full border border-black/10 text-black/35 hover:text-black hover:border-black/30 transition-all"
+            >
+              도움말
             </button>
             <button
               onClick={handleLogout}
