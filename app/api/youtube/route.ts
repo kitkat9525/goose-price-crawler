@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export const revalidate = 3600;
+export const revalidate = 0;
 
 const QUERY = '구스이불';
 const MAX_RESULTS = 20;
@@ -21,7 +21,7 @@ export async function GET() {
     url.searchParams.set('relevanceLanguage', 'ko');
     url.searchParams.set('key', apiKey);
 
-    const res = await fetch(url.toString(), { next: { revalidate: 3600 } });
+    const res = await fetch(url.toString(), { cache: 'no-store' });
     if (!res.ok) {
       console.error('[youtube] API error', res.status, await res.text());
       return NextResponse.json({ source: 'unavailable', error: 'api_error' });
