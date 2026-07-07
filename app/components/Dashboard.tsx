@@ -41,6 +41,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
   // UI 상태
   const [showFeedback, setShowFeedback] = useState(false);
+  const [showReview, setShowReview] = useState(false);
   const [activeSection, setActiveSection] = useState('sec-fx');
 
   // CFD 규격 탭 상태
@@ -117,6 +118,35 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
       <NoticePopup />
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
 
+      {/* ── 고객후기 팝업 ── */}
+      {showReview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setShowReview(false)}
+        >
+          <div
+            className="relative bg-white rounded-2xl overflow-hidden shadow-2xl w-full"
+            style={{ maxWidth: 960, height: '80vh' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-3 border-b border-black/8">
+              <span className="text-sm font-semibold text-black/70">고객 후기</span>
+              <button
+                onClick={() => setShowReview(false)}
+                className="text-black/30 hover:text-black transition-colors text-lg leading-none"
+              >✕</button>
+            </div>
+            <iframe
+              src="https://goosechoi.com/review"
+              className="w-full"
+              style={{ height: 'calc(100% - 49px)', border: 'none' }}
+              title="고객 후기"
+            />
+          </div>
+        </div>
+      )}
+
       {/* ── 헤더 ── */}
       <header className="border-b border-black/6 px-4 sm:px-6 sticky top-0 bg-white/95 backdrop-blur-sm z-10">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 py-3">
@@ -154,9 +184,9 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
             ))}
             <div className="w-px h-3 bg-black/10 mx-1 shrink-0" />
             <button
-              onClick={() => window.open('https://goosechoi.com/review', '_blank', 'width=960,height=700,noopener,noreferrer')}
-              className="shrink-0 text-xs font-semibold px-3 py-1 rounded-full transition-all whitespace-nowrap border"
-              style={{ color: KEY, borderColor: 'rgba(170,142,92,0.3)', backgroundColor: 'rgba(170,142,92,0.06)' }}
+              onClick={() => setShowReview(true)}
+              className="shrink-0 text-xs font-semibold px-3 py-1 rounded-full transition-all whitespace-nowrap"
+              style={{ color: 'rgba(0,0,0,0.35)', backgroundColor: 'transparent' }}
             >
               고객후기 바로가기 ↗
             </button>
