@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
 
   const pageToken = req.nextUrl.searchParams.get('pageToken');
 
+
   try {
     const url = new URL('https://www.googleapis.com/youtube/v3/search');
     url.searchParams.set('part', 'snippet');
@@ -20,10 +21,7 @@ export async function GET(req: NextRequest) {
     url.searchParams.set('type', 'video');
     url.searchParams.set('maxResults', String(MAX_RESULTS));
     url.searchParams.set('order', 'date');
-    const duration = req.nextUrl.searchParams.get('duration');
-    if (duration && ['short', 'medium', 'long'].includes(duration)) {
-      url.searchParams.set('videoDuration', duration);
-    }
+    url.searchParams.set('videoDuration', 'medium');
     url.searchParams.set('relevanceLanguage', 'ko');
     url.searchParams.set('key', apiKey);
     if (pageToken) url.searchParams.set('pageToken', pageToken);
