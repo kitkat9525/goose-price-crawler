@@ -206,6 +206,24 @@ function YoutubeCarousel() {
   );
 }
 
+// ─── 네이버 쇼핑라이브 ──────────────────────────
+function NaverLiveSection() {
+  return (
+    <div className="mt-10">
+      <SectionLabel title="네이버 쇼핑라이브" sub="이불 · 최신 라이브 검색" />
+      <div className="rounded-2xl overflow-hidden border border-black/8" style={{ height: 560 }}>
+        <iframe
+          src="https://shoppinglive.naver.com/search/lives?query=%EC%9D%B4%EB%B6%88"
+          width="100%"
+          height="100%"
+          style={{ border: 'none', display: 'block' }}
+          title="네이버 쇼핑라이브 이불 검색"
+        />
+      </div>
+    </div>
+  );
+}
+
 // ─── 메인 섹션 ───────────────────────────────────
 export function YoutubeSection() {
   return (
@@ -213,6 +231,7 @@ export function YoutubeSection() {
       <SectionLabel title="SNS 인사이트" sub="구스이불 · 유튜브 최신 영상" />
       <YoutubeCarousel />
       <p className="text-xs text-black/25 mt-4">출처: YouTube Data API v3</p>
+      <NaverLiveSection />
     </section>
   );
 }
