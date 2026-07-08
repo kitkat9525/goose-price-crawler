@@ -228,7 +228,7 @@ function NaverLiveSection() {
 export function YoutubeSection() {
   return (
     <section id="sec-sns">
-      <SectionLabel title="SNS 인사이트" sub="구스이불 · 유튜브 최신 영상" />
+      <SectionLabel title="유튜브 컨텐츠" sub="구스이불 · 유튜브 최신 영상" />
       <YoutubeCarousel />
       <p className="text-xs text-black/25 mt-4">출처: YouTube Data API v3</p>
       <NaverLiveSection />
