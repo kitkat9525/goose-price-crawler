@@ -425,7 +425,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
             <p>영이만을 위한 공간 © 2026</p>
             <p className="mt-0.5">Distributed by Kim Minsik</p>
             <p>io.dlwlrma@gmail.com</p>
-            <p>010-9309-0173</p>
           </div>
         </div>
       </footer>
