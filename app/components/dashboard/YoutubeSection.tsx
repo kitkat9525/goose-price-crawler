@@ -207,48 +207,41 @@ function YoutubeCarousel() {
 }
 
 // ─── 네이버 쇼핑라이브 ──────────────────────────
-function NaverLiveSection() {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+const NAVER_LIVE_HOME = 'https://shoppinglive.naver.com/search/lives?query=%EC%9D%B4%EB%B6%88';
 
-  function go(dir: 'back' | 'forward' | 'reload') {
-    const w = iframeRef.current?.contentWindow;
-    if (!w) return;
-    if (dir === 'back')    w.history.back();
-    if (dir === 'forward') w.history.forward();
-    if (dir === 'reload')  w.location.reload();
+function NaverLiveSection() {
+  const [src, setSrc] = useState(NAVER_LIVE_HOME);
+
+  function goHome() {
+    setSrc('');
+    setTimeout(() => setSrc(NAVER_LIVE_HOME), 50);
   }
 
   return (
     <div className="mt-10">
       <SectionLabel title="네이버 쇼핑라이브" sub="이불 · 최신 라이브 검색" />
       <div className="rounded-2xl overflow-hidden border border-black/8">
-        {/* 브라우저 툴바 */}
+        {/* 툴바 */}
         <div className="flex items-center gap-2 px-3 py-2 border-b border-black/8 bg-black/[0.02]">
-          <button onClick={() => go('back')}
-            className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-black/8 transition-colors text-black/40 hover:text-black/70">
+          <button
+            onClick={goHome}
+            className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-black/8 transition-colors text-black/40 hover:text-black/70"
+            title="홈으로"
+          >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M9 11L5 7L9 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          <button onClick={() => go('forward')}
-            className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-black/8 transition-colors text-black/40 hover:text-black/70">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          <button onClick={() => go('reload')}
-            className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-black/8 transition-colors text-black/40 hover:text-black/70">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2 7a5 5 0 1 0 1.5-3.5L2 2v3h3L3.8 3.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M1 6.5L7 1.5L13 6.5V13H9.5V9.5H4.5V13H1V6.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
             </svg>
           </button>
           <div className="flex-1 mx-1 px-3 py-1 rounded-full text-[11px] text-black/30 bg-black/5 truncate select-none">
             shoppinglive.naver.com
           </div>
-          <a href="https://shoppinglive.naver.com/search/lives?query=%EC%9D%B4%EB%B6%88"
-            target="_blank" rel="noopener noreferrer"
+          <a
+            href={NAVER_LIVE_HOME}
+            target="_blank"
+            rel="noopener noreferrer"
             className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-black/8 transition-colors text-black/40 hover:text-black/70"
-            title="새 탭으로 열기">
+            title="새 탭으로 열기"
+          >
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
               <path d="M5 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               <path d="M8 1h4v4M12 1L7 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -256,14 +249,15 @@ function NaverLiveSection() {
           </a>
         </div>
         <div style={{ height: 560 }}>
-          <iframe
-            ref={iframeRef}
-            src="https://shoppinglive.naver.com/search/lives?query=%EC%9D%B4%EB%B6%88"
-            width="100%"
-            height="100%"
-            style={{ border: 'none', display: 'block' }}
-            title="네이버 쇼핑라이브 이불 검색"
-          />
+          {src && (
+            <iframe
+              src={src}
+              width="100%"
+              height="100%"
+              style={{ border: 'none', display: 'block' }}
+              title="네이버 쇼핑라이브 이불 검색"
+            />
+          )}
         </div>
       </div>
     </div>
