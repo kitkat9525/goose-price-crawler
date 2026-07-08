@@ -248,7 +248,7 @@ function NaverLiveSection() {
             </svg>
           </a>
         </div>
-        <div style={{ height: 560 }}>
+        <div style={{ height: 900 }}>
           {src && (
             <iframe
               src={src}
