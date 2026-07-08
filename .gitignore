@@ -30,6 +30,3 @@ next-env.d.ts
 # git lock backups
 *.lock.bak
 
-# 임시 테스트 파일
-world-clock.html
-cert-test.html
