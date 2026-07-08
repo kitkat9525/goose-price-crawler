@@ -203,7 +203,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
                 },
                 {
                   label: 'SNS인사이트',
-                  desc: '유튜브에서 구스이불 관련 최신 영상을 자동으로 가져옵니다. 소비자들이 어떤 콘텐츠에 관심을 갖고 있는지 파악하는 데 활용하세요.',
+                  desc: '유튜브 최신 영상과 네이버 쇼핑라이브를 한 곳에서 볼 수 있습니다. 유튜브에서는 구스이불 관련 최신 영상을, 네이버 쇼핑라이브에서는 이불 관련 실시간·최신 라이브 방송을 확인할 수 있습니다.',
                 },
               ].map(({ label, desc, extra }) => (
                 <div key={label} className="flex gap-3">
