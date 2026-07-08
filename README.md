@@ -10,6 +10,7 @@
 - **국내·해외 뉴스** — 네이버 뉴스 API / Google News RSS
 - **네이버 쇼핑 트렌드** — 구스이불·구스베개·구스토퍼 상품 캐러셀 + 가격분포
 - **네이버 쇼핑 인사이트** — 키워드별 월별 클릭 트렌드 + 기기별·성별·연령별 분포 (데이터랩 API)
+- **SNS 인사이트** — 유튜브 최신 컨텐츠(YouTube Data API v3) + 네이버 쇼핑라이브 이불 검색 (iframe)
 - **의견 보내기** — SQLite(Turso) 저장
 
 ## 환경변수
@@ -29,6 +30,10 @@ CUSTOMS_API_KEY=
 # ※ 쇼핑인사이트 사용 시 앱 설정에서 "데이터랩(쇼핑인사이트)" 권한 추가 필요
 NAVER_CLIENT_ID=
 NAVER_CLIENT_SECRET=
+
+# YouTube Data API v3 (선택 — 없으면 SNS인사이트 유튜브 섹션 비활성)
+# 발급: https://console.cloud.google.com → YouTube Data API v3 활성화
+YOUTUBE_API_KEY=
 
 # Turso DB (선택 — 없으면 로컬 SQLite 파일 사용)
 # 발급: https://turso.tech
@@ -60,6 +65,8 @@ Vercel에 연결 후 위 환경변수를 동일하게 추가하면 됩니다.
 | Google News RSS | 해외 영문 뉴스 | 1시간 캐시 |
 | 네이버 쇼핑 API | 상품 목록·가격분포 | 1시간 캐시 |
 | 네이버 데이터랩 쇼핑인사이트 API | 키워드 클릭 트렌드·기기·성별·연령별 | 1시간 캐시 |
+| YouTube Data API v3 | 구스이불 관련 채널 최신 영상 목록 | 1시간 캐시 |
+| 네이버 쇼핑라이브 | 이불 카테고리 최신 라이브 목록 (iframe) | 실시간 |
 
 ---
 
