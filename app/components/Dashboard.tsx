@@ -421,7 +421,12 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
             <a href="https://www.data.go.kr/data/15101609/openapi.do" target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors">관세청 공공데이터</a>
             <a href="https://open.er-api.com" target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors">환율 API</a>
           </div>
-          <p>영이만을 위한 공간 · © 2026</p>
+          <div className="text-right">
+            <p>영이만을 위한 공간 © 2026</p>
+            <p className="mt-0.5">Distributed by Kim Minsik</p>
+            <p>io.dlwlrma@gmail.com</p>
+            <p>010-9309-0173</p>
+          </div>
         </div>
       </footer>
     </div>
