@@ -248,11 +248,11 @@ function NaverLiveSection() {
             </svg>
           </a>
         </div>
-        <div style={{ height: 900 }}>
+        <div style={{ height: 560, display: 'flex', justifyContent: 'center', backgroundColor: '#f5f5f5' }}>
           {src && (
             <iframe
               src={src}
-              width="100%"
+              width={390}
               height="100%"
               style={{ border: 'none', display: 'block' }}
               title="네이버 쇼핑라이브 이불 검색"
