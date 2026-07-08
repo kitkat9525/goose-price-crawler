@@ -37,8 +37,13 @@ const CURRENCIES: Currency[] = ['CNY', 'USD', 'KRW', 'EUR'];
 export default function Dashboard({ data }: { data: AggregatedData }) {
   const router = useRouter();
 
-  // 통화 설정
-  const [currency, setCurrency] = useState<Currency>('KRW');
+  // 통화 설정 (로컬스토리지에서 초기값 복원)
+  const [currency, setCurrency] = useState<Currency>(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}');
+      return (s.currency as Currency) ?? 'KRW';
+    } catch { return 'KRW'; }
+  });
 
   // UI 상태
   const [showFeedback, setShowFeedback] = useState(false);
@@ -49,14 +54,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
   const [cfdStandard, setCfdStandard] = useState<string>('服标');
   const [cfdData, setCfdData] = useState<PriceData>(data.cfd);
   const [cfdLoading, setCfdLoading] = useState(false);
-
-  // 로컬스토리지에서 통화 설정 복원
-  useEffect(() => {
-    try {
-      const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}');
-      if (s.currency) setCurrency(s.currency);
-    } catch {}
-  }, []);
 
   // 스크롤 위치에 따른 활성 섹션 추적
   useEffect(() => {
@@ -112,7 +109,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
   const { fx, customs } = data;
   const goose = cfdData.categories.filter(c => c.type === 'goose');
   const duck  = cfdData.categories.filter(c => c.type === 'duck');
-  const currentStandardLabel = CFD_STANDARDS.find(s => s.key === cfdStandard)?.label ?? '';
 
   return (
     <div className="min-h-screen bg-white">

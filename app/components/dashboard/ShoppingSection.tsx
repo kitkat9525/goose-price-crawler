@@ -134,6 +134,7 @@ function ShoppingCarousel({ query }: { query: string }) {
 
   useEffect(() => {
     startRef.current = 1;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setHasMore(true);
     fetch(`/api/shopping?query=${encodeURIComponent(query)}&start=1`)
@@ -218,10 +219,12 @@ function ShoppingCarousel({ query }: { query: string }) {
                 style={{ scrollSnapAlign: 'start' }}
               >
                 <div className="w-full h-36 bg-black/[0.03] overflow-hidden">
-                  {item.image
-                    ? <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                    : <div className="w-full h-full flex items-center justify-center text-black/15 text-xs">이미지 없음</div>
-                  }
+                  {item.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-black/15 text-xs">이미지 없음</div>
+                  )}
                 </div>
                 <div className="px-3 py-2.5 flex flex-col gap-1 flex-1">
                   <p className="text-xs font-medium text-black/75 leading-snug line-clamp-2">{item.title}</p>

@@ -23,6 +23,7 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (tab === 'list') loadFeedbacks();
   }, [tab]);
 

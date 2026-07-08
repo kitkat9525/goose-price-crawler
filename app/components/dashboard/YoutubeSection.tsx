@@ -12,7 +12,6 @@ interface YoutubeItem {
   thumbnail:   string;
 }
 
-const PAGE_SIZE = 20; // YouTube API max per request
 
 function fmtDate(iso: string): string {
   try {

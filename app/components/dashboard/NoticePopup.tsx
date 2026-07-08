@@ -36,6 +36,7 @@ export function NoticePopup() {
   const [isMobile, setIsMobile]   = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMobile(window.innerWidth < 640);
     const today = new Date().toISOString().slice(0, 10);
     if (localStorage.getItem(NOTICE_KEY) === today) return;
