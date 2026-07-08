@@ -207,7 +207,7 @@ function YoutubeCarousel() {
 }
 
 // ─── 네이버 쇼핑라이브 ──────────────────────────
-const NAVER_LIVE_HOME = 'https://shoppinglive.naver.com/search/lives?query=%EC%9D%B4%EB%B6%88';
+const NAVER_LIVE_HOME = 'https://shoppinglive.naver.com/search/lives?query=%EC%9D%B4%EB%B6%88&sort=RECENT';
 
 function NaverLiveSection() {
   const [src, setSrc] = useState(NAVER_LIVE_HOME);
