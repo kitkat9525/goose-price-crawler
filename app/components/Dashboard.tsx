@@ -179,6 +179,10 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
                   ),
                 },
                 {
+                  label: '인증현황',
+                  desc: '구스다운·덕다운 업계에서 통용되는 주요 국제 인증 6종(OEKO-TEX, RDS, IDFL, Ultra-Fresh, SGS, DOWNPASS)을 한눈에 정리했습니다. 각 로고를 클릭하면 해당 인증 기관의 최신 소식 페이지로 이동합니다.',
+                },
+                {
                   label: '수입통계',
                   desc: '관세청에서 제공하는 국내 깃털·솜털 수입 통계입니다. 월별 수입량과 금액 추이를 그래프와 표로 확인할 수 있어 시장 흐름을 파악하는 데 도움이 됩니다.',
                 },
@@ -288,9 +292,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           </div>
         </section>
 
-        {/* ── 인증 현황 ── */}
-        <CertSection />
-
         {/* ── 표준규격 + 거위털 + 오리털 ── */}
         <div id="sec-goose" className="space-y-6">
           <div>
@@ -344,6 +345,9 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
             </div>
           </div>
         </div>
+
+        {/* ── 인증 현황 ── */}
+        <CertSection />
 
         {/* ── 관세청 수입통계 ── */}
         <section id="sec-customs">
