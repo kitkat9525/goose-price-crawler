@@ -288,6 +288,9 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           </div>
         </section>
 
+        {/* ── 인증 현황 ── */}
+        <CertSection />
+
         {/* ── 표준규격 + 거위털 + 오리털 ── */}
         <div id="sec-goose" className="space-y-6">
           <div>
