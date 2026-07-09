@@ -20,6 +20,7 @@ import { ShoppingSection }               from './dashboard/ShoppingSection';
 import { ShoppingInsightSection }        from './dashboard/ShoppingInsightSection';
 import { YoutubeSection }               from './dashboard/YoutubeSection';
 import { NoticePopup }                   from './dashboard/NoticePopup';
+import { CertSection }                   from './dashboard/CertSection';
 
 // ─── CFD 규격 상수 ───────────────────────────────
 const CFD_STANDARDS = [
@@ -340,6 +341,9 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
             </div>
           </div>
         </div>
+
+        {/* ── 인증 현황 ── */}
+        <CertSection />
 
         {/* ── 관세청 수입통계 ── */}
         <section id="sec-customs">
