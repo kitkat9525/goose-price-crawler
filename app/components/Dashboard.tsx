@@ -345,9 +345,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           </div>
         </div>
 
-        {/* ── 인증 현황 ── */}
-        <CertSection />
-
         {/* ── 관세청 수입통계 ── */}
         <section id="sec-customs">
           <SectionLabel title="한국 수입 통계 — 관세청" sub="월별 집계 · 매월 15일경 업데이트" />
