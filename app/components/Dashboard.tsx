@@ -21,6 +21,7 @@ import { ShoppingInsightSection }        from './dashboard/ShoppingInsightSectio
 import { YoutubeSection }               from './dashboard/YoutubeSection';
 import { NoticePopup }                   from './dashboard/NoticePopup';
 import { CertSection }                   from './dashboard/CertSection';
+import { ChannelSection }               from './dashboard/ChannelSection';
 
 // ─── CFD 규격 상수 ───────────────────────────────
 const CFD_STANDARDS = [
@@ -408,6 +409,9 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
 
         {/* ── SNS 인사이트 ── */}
         <YoutubeSection />
+
+        {/* ── 채널 인사이트 ── */}
+        <ChannelSection />
 
         {/* ── 주의사항 ── */}
         <section className="text-xs text-black/20 space-y-1 pb-4 border-t border-black/5 pt-6">

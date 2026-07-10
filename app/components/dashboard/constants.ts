@@ -20,6 +20,7 @@ export const NAV_SECTIONS = [
   { id: 'sec-price-dist', label: '가격분포' },
   { id: 'sec-insight',    label: '쇼핑인사이트' },
   { id: 'sec-sns',        label: 'SNS인사이트' },
+  { id: 'sec-channel',    label: '채널인사이트' },
 ] as const;
 
 // ─── 통화 ───────────────────────────────────────
