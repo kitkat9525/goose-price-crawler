@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { upsertSubscriberSnapshot, getSubscriberSnapshots } from '@/app/lib/db';
 
 export const revalidate = 21600; // 6시간 캐시
 
@@ -82,19 +83,28 @@ export async function GET() {
       ? Math.round(intervals.reduce((s, v) => s + v, 0) / intervals.length)
       : null;
 
+    const subscribers = parseInt(ch.statistics.subscriberCount ?? '0');
+
+    // 오늘 스냅샷 저장 (upsert)
+    await upsertSubscriberSnapshot(channelId, subscribers);
+
+    // 최근 90일 스냅샷 조회
+    const snapshots = await getSubscriberSnapshots(channelId, 90);
+
     return NextResponse.json({
       channel: {
         id:          channelId,
         title:       ch.snippet.title,
         thumbnail:   ch.snippet.thumbnails.medium?.url ?? '',
         publishedAt: ch.snippet.publishedAt,
-        subscribers: parseInt(ch.statistics.subscriberCount ?? '0'),
+        subscribers,
         totalViews:  parseInt(ch.statistics.viewCount ?? '0'),
         videoCount:  parseInt(ch.statistics.videoCount ?? '0'),
       },
       topVideos:    byViews.slice(0, 5),
       latestVideos: byDate.slice(0, 5),
       avgUploadInterval: avgInterval,
+      snapshots,
     });
   } catch (e) {
     console.error('[youtube-channel]', e);

@@ -50,6 +50,17 @@ async function initDb() {
   await db.execute(`
     INSERT OR IGNORE INTO users (username, password) VALUES ('goosechoi', 'choiinyeong')
   `);
+
+  // 구독자 수 일별 스냅샷
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS subscriber_snapshots (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      channel_id   TEXT NOT NULL,
+      date         TEXT NOT NULL,
+      subscribers  INTEGER NOT NULL,
+      UNIQUE(channel_id, date)
+    )
+  `);
 }
 
 export async function verifyUser(username: string, password: string): Promise<boolean> {
@@ -69,6 +80,33 @@ export async function insertFeedback(content: string) {
     sql: `INSERT INTO feedbacks (content, created_at) VALUES (?, ?)`,
     args: [content, new Date().toISOString()],
   });
+}
+
+// ── 구독자 스냅샷 ──────────────────────────────────────────────────────────────
+
+export async function upsertSubscriberSnapshot(channelId: string, subscribers: number) {
+  await initDb();
+  const db = getClient();
+  const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  await db.execute({
+    sql: `INSERT INTO subscriber_snapshots (channel_id, date, subscribers)
+          VALUES (?, ?, ?)
+          ON CONFLICT(channel_id, date) DO UPDATE SET subscribers = excluded.subscribers`,
+    args: [channelId, date, subscribers],
+  });
+}
+
+export async function getSubscriberSnapshots(channelId: string, days = 30) {
+  await initDb();
+  const db = getClient();
+  const result = await db.execute({
+    sql: `SELECT date, subscribers FROM subscriber_snapshots
+          WHERE channel_id = ?
+          ORDER BY date ASC
+          LIMIT ?`,
+    args: [channelId, days],
+  });
+  return result.rows as unknown as { date: string; subscribers: number }[];
 }
 
 export async function getAllFeedbacks() {
