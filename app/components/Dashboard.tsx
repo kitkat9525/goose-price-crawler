@@ -39,7 +39,6 @@ const CURRENCIES: Currency[] = ['CNY', 'USD', 'KRW', 'EUR'];
 export default function Dashboard({ data }: { data: AggregatedData }) {
   const router = useRouter();
 
-  // 통화 설정 (로컬스토리지에서 초기값 복원)
   const [currency, setCurrency] = useState<Currency>(() => {
     try {
       const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}');
@@ -47,12 +46,10 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
     } catch { return 'KRW'; }
   });
 
-  // UI 상태
   const [showFeedback, setShowFeedback] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [activeSection, setActiveSection] = useState('sec-fx');
 
-  // CFD 규격 탭 상태
   const [cfdStandard, setCfdStandard] = useState<string>('服标');
   const [cfdData, setCfdData] = useState<PriceData>(data.cfd);
   const [cfdLoading, setCfdLoading] = useState(false);
@@ -101,7 +98,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
       const json: PriceData = await res.json();
       setCfdData(json);
     } catch {
-      // 실패 시 현재 데이터 유지
     } finally {
       setCfdLoading(false);
     }
@@ -129,16 +125,12 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
             style={{ maxWidth: 560, maxHeight: '85vh' }}
             onClick={e => e.stopPropagation()}
           >
-            {/* 헤더 */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-black/8">
               <h2 className="text-sm font-bold text-black">구초뉴스 도움말</h2>
               <button onClick={() => setShowHelp(false)} className="text-black/25 hover:text-black transition-colors text-lg leading-none ml-4">✕</button>
             </div>
 
-            {/* 본문 */}
             <div className="overflow-y-auto px-6 py-5 space-y-5" style={{ maxHeight: 'calc(85vh - 73px)' }}>
-
-              {/* 사이트 소개 */}
               <div className="rounded-xl p-4" style={{ backgroundColor: 'rgba(170,142,92,0.06)', border: '1px solid rgba(170,142,92,0.2)' }}>
                 <p className="text-xs font-semibold mb-1" style={{ color: KEY }}>이 사이트는 무엇인가요?</p>
                 <p className="text-xs text-black/60 leading-relaxed">
@@ -147,7 +139,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
                 </p>
               </div>
 
-              {/* 섹션별 설명 */}
               {[
                 {
                   label: '환율',
