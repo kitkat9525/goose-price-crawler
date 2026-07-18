@@ -174,6 +174,10 @@ export function ChannelSection() {
   const [tab, setTab] = useState<'top' | 'latest'>('top');
 
   useEffect(() => {
+    window.open('https://playboard.co/channel/UChuq17DrAiJwkpxNajkEDYw', '_blank', 'noopener,noreferrer');
+  }, []);
+
+  useEffect(() => {
     fetch('/api/youtube-channel')
       .then(r => r.json())
       .then(d => { if (!d.error) setData(d); })
@@ -243,6 +247,7 @@ export function ChannelSection() {
               <VideoCard key={v.id} v={v} rank={tab === 'top' ? i : undefined} />
             ))}
           </div>
+
         </div>
       )}
 
