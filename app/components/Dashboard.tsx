@@ -865,12 +865,11 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
       <div id="sec-fx" style={{ display: 'grid', gridTemplateColumns: '1.35fr 1fr', borderBottom: '1px solid #ebebeb', minHeight: 360 }}>
         <div style={{ borderRight: '1px solid #ebebeb', padding: '32px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'rgba(17,17,17,0.28)', marginBottom: 10, textTransform: 'uppercase' }}>EXCHANGE RATE · EUR / KRW</p>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'rgba(17,17,17,0.28)', marginBottom: 10, textTransform: 'uppercase' }}>EXCHANGE RATE · €1 EUR</p>
             <div style={{ fontSize: 72, fontWeight: 900, letterSpacing: -4, lineHeight: 1, color: '#111' }}>
               ₩{fmtNum(eurKrw, 0)}
-              <span style={{ fontSize: 18, fontWeight: 400, opacity: 0.3, marginLeft: 4, letterSpacing: 0 }}>€1 EUR</span>
             </div>
-            <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.35)', marginTop: 8 }}>{lastUpdated ? `기준 ${lastUpdated} · open.er-api.com` : 'open.er-api.com'}</p>
+            <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.35)', marginTop: 8 }}>{lastUpdated ? `${lastUpdated} · open.er-api.com` : 'open.er-api.com'}</p>
             <div style={{ display: 'flex', gap: 6, marginTop: 14 }}>
               {CURRENCIES.map(c => (
                 <button key={c} onClick={() => saveCurrency(c)} style={{
