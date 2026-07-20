@@ -40,6 +40,18 @@ const SHOPPING_KWS = [
 ];
 
 const INSIGHT_KWS = ['구스이불', '구스베개', '구스토퍼', '이불', '베개', '토퍼'];
+
+const M_NAV: { id: string; label: string; sep?: boolean }[] = [
+  { id: 'm-fx',       label: '환율' },
+  { id: 'm-goose',    label: '구스·덕다운' },
+  { id: 'm-cert',     label: '인증현황' },
+  { id: 'm-customs',  label: '수입통계' },
+  { id: 'm-news',     label: '뉴스' },
+  { id: 'm-shopping', label: '쇼핑트렌드', sep: true },
+  { id: 'm-pricedist',label: '가격분포' },
+  { id: 'm-insight',  label: '쇼핑인사이트' },
+  { id: 'm-sns',      label: 'SNS인사이트' },
+];
 const DEVICE_LBL: Record<string, string> = { pc: 'PC', mo: '모바일' };
 const GENDER_LBL: Record<string, string> = { f: '여성', m: '남성' };
 const AGE_LBL: Record<string, string>    = { '10':'10대','20':'20대','30':'30대','40':'40대','50':'50대','60':'60대+' };
@@ -595,6 +607,7 @@ export default function MobileDashboard({ data }: { data: AggregatedData }) {
   });
   const [showFeedback, setShowFeedback] = useState(false);
   const [showHelp, setShowHelp]         = useState(false);
+  const [active, setActive]             = useState('m-fx');
   const [cfdStd, setCfdStd]             = useState('服标');
   const [cfdData, setCfdData]           = useState(data.cfd);
   const [cfdLoading, setCfdLoading]     = useState(false);
@@ -622,6 +635,22 @@ export default function MobileDashboard({ data }: { data: AggregatedData }) {
     catch { return fx.lastUpdatedUtc; }
   })() : null;
 
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      entries => {
+        const vis = entries.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (vis.length) setActive(vis[0].target.id);
+      },
+      { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+    );
+    M_NAV.forEach(({ id }) => { const el = document.getElementById(id); if (el) obs.observe(el); });
+    return () => obs.disconnect();
+  }, []);
+
+  function scrollTo(id: string) {
+    const el = document.getElementById(id); if (!el) return;
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
+  }
   function saveCurrency(c: Currency) {
     setCurrency(c);
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ currency: c })); } catch {}
@@ -653,17 +682,41 @@ export default function MobileDashboard({ data }: { data: AggregatedData }) {
       {menuOpen && <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setMenuOpen(false)} />}
 
       {/* 헤더 */}
-      <header style={{ position: 'sticky', top: 0, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(8px)', zIndex: 50, borderBottom: '1px solid #ebebeb', height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px' }}>
-        <h1 style={{ fontSize: 15, fontWeight: 400, letterSpacing: '0.1em', color: '#111' }}>GOOCHO MAGAZINE</h1>
-        <button onClick={() => setMenuOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
-          <span style={{ display: 'block', width: 18, height: 1.5, background: '#111' }} />
-          <span style={{ display: 'block', width: 18, height: 1.5, background: '#111' }} />
-          <span style={{ display: 'block', width: 18, height: 1.5, background: '#111' }} />
-        </button>
+      <header style={{ position: 'sticky', top: 0, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(8px)', zIndex: 50, borderBottom: '1px solid #ebebeb' }}>
+        <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px' }}>
+          <h1 style={{ fontSize: 15, fontWeight: 400, letterSpacing: '0.1em', color: '#111' }}>GOOCHO MAGAZINE</h1>
+          <button onClick={() => setMenuOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
+            <span style={{ display: 'block', width: 18, height: 1.5, background: '#111' }} />
+            <span style={{ display: 'block', width: 18, height: 1.5, background: '#111' }} />
+            <span style={{ display: 'block', width: 18, height: 1.5, background: '#111' }} />
+          </button>
+        </div>
+        {/* 탭 네비 */}
+        <div style={{ display: 'flex', alignItems: 'center', overflowX: 'auto', scrollbarWidth: 'none' } as React.CSSProperties}>
+          {M_NAV.map(({ id, label, sep }) => {
+            const on = active === id;
+            return (
+              <span key={id} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                {sep && <span style={{ width: 1, height: 12, background: '#ddd', margin: '0 2px', flexShrink: 0 }} />}
+                <button onClick={() => scrollTo(id)} style={{
+                  fontSize: 13, fontWeight: 700, padding: '10px 12px', whiteSpace: 'nowrap',
+                  background: 'none', border: 'none', borderBottom: on ? `2px solid ${KEY}` : '2px solid transparent',
+                  marginBottom: -1, cursor: 'pointer', color: on ? KEY : '#111', fontFamily: 'inherit',
+                }}>
+                  {label}
+                </button>
+              </span>
+            );
+          })}
+          <a href="https://playboard.co/channel/UChuq17DrAiJwkpxNajkEDYw" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 13, fontWeight: 700, padding: '10px 12px', borderBottom: '2px solid transparent', marginBottom: -1, whiteSpace: 'nowrap', color: '#111', textDecoration: 'none', flexShrink: 0 }}>
+            플레이보드 바로가기 ↗
+          </a>
+        </div>
       </header>
 
       {/* 환율 */}
-      <div style={SEC}>
+      <div id="m-fx" style={SEC}>
         <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: 2, color: 'rgba(17,17,17,0.28)', marginBottom: 6, textTransform: 'uppercase' }}>EXCHANGE RATE · €1 EUR</p>
         <div style={{ fontSize: 52, fontWeight: 900, letterSpacing: -3, lineHeight: 1, color: '#111' }}>
           ₩{fmtNum(eurKrw, 0)}
@@ -699,7 +752,7 @@ export default function MobileDashboard({ data }: { data: AggregatedData }) {
       </div>
 
       {/* CFD 시세 */}
-      <div style={SEC}>
+      <div id="m-goose" style={SEC}>
         <MSecHdr tag="CFD · 중국우융공업협회" title="표준 규격" sub="90% 기준" />
         <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid #ebebeb', marginBottom: 16, overflowX: 'auto', scrollbarWidth: 'none' } as React.CSSProperties}>
           {CFD_STANDARDS.map(({ key, label }) => (
@@ -720,7 +773,7 @@ export default function MobileDashboard({ data }: { data: AggregatedData }) {
       </div>
 
       {/* 인증 현황 */}
-      <div style={SEC}>
+      <div id="m-cert" style={SEC}>
         <MSecHdr tag="CERT" title="인증 현황" sub="구스다운 · 덕다운 관련" />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
           {CERTS.map(cert => (
@@ -741,7 +794,7 @@ export default function MobileDashboard({ data }: { data: AggregatedData }) {
       </div>
 
       {/* 수입통계 */}
-      <div style={SEC}>
+      <div id="m-customs" style={SEC}>
         <MSecHdr tag="CUSTOMS · 관세청" title="수입 통계" sub="월별 집계" />
         {!customs && (
           <div style={{ border: '1px solid #ebebeb', padding: '28px 16px', textAlign: 'center' }}>
@@ -758,7 +811,7 @@ export default function MobileDashboard({ data }: { data: AggregatedData }) {
       </div>
 
       {/* 국내 뉴스 */}
-      <div style={SEC}>
+      <div id="m-news" style={SEC}>
         <MNewsCol title="국내 뉴스" keywords={['거위털', '오리털', '구스이불']} apiPath="/api/news-kr" sourceNote="출처: 네이버 뉴스 검색 API · 국내 언론사 기준" />
       </div>
 
@@ -768,7 +821,7 @@ export default function MobileDashboard({ data }: { data: AggregatedData }) {
       </div>
 
       {/* 쇼핑 트렌드 */}
-      <div style={SEC}>
+      <div id="m-shopping" style={SEC}>
         <MSecHdr tag="SHOPPING TREND" title="쇼핑 트렌드" sub="인기 · 판매량순 · 네이버 쇼핑" />
         {SHOPPING_KWS.map(({ query, label }) => (
           <div key={query} style={{ marginBottom: 20 }}>
@@ -780,7 +833,7 @@ export default function MobileDashboard({ data }: { data: AggregatedData }) {
       </div>
 
       {/* 가격 분포 */}
-      <div style={SEC}>
+      <div id="m-pricedist" style={SEC}>
         <MSecHdr tag="PRICE DIST" title="가격 분포" sub="상위 100개 · 네이버 쇼핑" />
         <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
           {SHOPPING_KWS.map(({ query, label }) => (
@@ -795,12 +848,12 @@ export default function MobileDashboard({ data }: { data: AggregatedData }) {
       </div>
 
       {/* 쇼핑인사이트 */}
-      <div style={SEC}>
+      <div id="m-insight" style={SEC}>
         <MInsightSection />
       </div>
 
       {/* 유튜브 */}
-      <div style={SEC}>
+      <div id="m-sns" style={SEC}>
         <MSecHdr tag="SNS INSIGHT · YouTube Data API v3" title="유튜브 컨텐츠" sub="구스이불 · 최신 영상" />
         <MYoutubeGrid />
         <p style={{ fontSize: 9, color: 'rgba(17,17,17,0.28)', marginTop: 10 }}>출처: YouTube Data API v3</p>
