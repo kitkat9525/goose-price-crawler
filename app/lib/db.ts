@@ -46,12 +46,11 @@ async function initDb() {
     )
   `);
 
-  // 기본 계정 시드 (없을 때만)
   await db.execute(`
     INSERT OR IGNORE INTO users (username, password) VALUES ('goosechoi', 'choiinyeong')
   `);
 
-  // 구독자 수 일별 스냅샷
+  // ── 구독자 스냅샷
   await db.execute(`
     CREATE TABLE IF NOT EXISTS subscriber_snapshots (
       id           INTEGER PRIMARY KEY AUTOINCREMENT,

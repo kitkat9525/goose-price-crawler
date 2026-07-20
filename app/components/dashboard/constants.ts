@@ -1,13 +1,29 @@
 import type { FxRates } from '@/app/lib/aggregate';
 
-// ─── 색상 ───────────────────────────────────────
-export const KEY        = '#AA8E5C';
-export const KEY_BG     = 'rgba(170,142,92,0.08)';
-export const KEY_BORDER = 'rgba(170,142,92,0.3)';
+// ─── 키컬러 (Header 네비 active 언더라인에만 사용) ──
+export const KEY = '#AA8E5C';
 
 // ─── 앱 설정 ────────────────────────────────────
 export const SETTINGS_KEY = 'goose-settings';
 export const PAGE_SIZE    = 10;
+
+// ─── CFD 규격 ────────────────────────────────────
+export const CFD_STANDARDS = [
+  { key: '服标', label: '중국의류표준' },
+  { key: '寝标', label: '중국침구표준' },
+  { key: '国标', label: '중국국가표준' },
+  { key: '欧标', label: '유럽표준' },
+  { key: '美标', label: '미국표준' },
+  { key: '日标', label: '일본표준' },
+] as const;
+
+export type CfdStandardKey = typeof CFD_STANDARDS[number]['key'];
+
+export type Currency = 'CNY' | 'USD' | 'KRW' | 'EUR';
+
+export const CURRENCY_LABELS: Record<Currency, string>  = { CNY: '위안', USD: '달러', KRW: '원', EUR: '유로' };
+export const CURRENCY_SYMBOLS: Record<Currency, string> = { CNY: '¥', USD: '$', KRW: '₩', EUR: '€' };
+export const CURRENCIES: Currency[] = ['CNY', 'USD', 'KRW', 'EUR'];
 
 // ─── 내비게이션 ─────────────────────────────────
 export const NAV_SECTIONS = [
@@ -20,14 +36,7 @@ export const NAV_SECTIONS = [
   { id: 'sec-price-dist', label: '가격분포' },
   { id: 'sec-insight',    label: '쇼핑인사이트' },
   { id: 'sec-sns',        label: 'SNS인사이트' },
-  { id: 'sec-channel',    label: '채널인사이트' },
 ] as const;
-
-// ─── 통화 ───────────────────────────────────────
-export type Currency = 'CNY' | 'USD' | 'KRW' | 'EUR';
-
-export const CURRENCY_LABELS: Record<Currency, string>  = { CNY: '위안', USD: '달러', KRW: '원', EUR: '유로' };
-export const CURRENCY_SYMBOLS: Record<Currency, string> = { CNY: '¥', USD: '$', KRW: '₩', EUR: '€' };
 
 export function convert(cny: number, currency: Currency, fx: FxRates): number {
   if (currency === 'USD') return cny * fx.USD;

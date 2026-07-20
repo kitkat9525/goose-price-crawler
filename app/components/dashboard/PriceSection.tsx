@@ -3,9 +3,8 @@ import {
   Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import type { CategoryPrices, PriceEntry, FxRates } from '@/app/lib/aggregate';
-import { KEY, Currency, convert, fmtPrice, fmtNum, CURRENCY_SYMBOLS } from './constants';
+import { Currency, convert, fmtPrice, fmtNum, CURRENCY_SYMBOLS } from './constants';
 
-// ─── 가격 행 ─────────────────────────────────────
 export function PriceRow({ entry, currency, fx }: { entry: PriceEntry; currency: Currency; fx: FxRates }) {
   const current = convert(entry.current, currency, fx);
   const diff    = convert(Math.abs(entry.diff), currency, fx);
@@ -13,7 +12,7 @@ export function PriceRow({ entry, currency, fx }: { entry: PriceEntry; currency:
 
   return (
     <tr className="border-t border-black/5 hover:bg-black/[0.02] transition-colors">
-      <td className="py-2.5 px-4 text-xs font-semibold text-black/35 w-16">{entry.grade}</td>
+      <td className="py-2.5 px-4 text-xs font-bold text-black/35 w-16">{entry.grade}</td>
       <td className="py-2.5 px-4 text-right">
         <span className="text-sm font-bold text-black">{fmtPrice(current, currency)}<span className="text-xs font-normal text-black/30">/kg</span></span>
       </td>
@@ -27,27 +26,25 @@ export function PriceRow({ entry, currency, fx }: { entry: PriceEntry; currency:
   );
 }
 
-// ─── 시세 카드 ───────────────────────────────────
 export function CategoryCard({ cat, currency, fx }: { cat: CategoryPrices; currency: Currency; fx: FxRates }) {
   const isGoose = cat.type === 'goose';
   const top = cat.prices.find(p => p.grade === '90%');
 
   return (
-    <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
-      <div className="h-0.5" style={{ backgroundColor: KEY }} />
+    <div className="bg-white border border-black/8 overflow-hidden">
       <div className="px-4 py-4 bg-black">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="text-xs font-medium text-white/40 tracking-widest uppercase mb-1">
+            <p className="text-xs font-bold text-white/40 tracking-widest uppercase mb-1">
               {isGoose ? 'Goose Down' : 'Duck Down'} · {cat.color === 'white' ? 'White' : 'Grey'}
             </p>
-            <h3 className="text-lg font-bold text-white leading-tight">{cat.nameKr}</h3>
+            <h3 className="text-lg font-black text-white leading-tight">{cat.nameKr}</h3>
             <p className="text-xs text-white/30 mt-0.5">{cat.name}</p>
           </div>
           {top && (
             <div className="text-right shrink-0">
               <p className="text-xs text-white/30 mb-0.5">90% 기준</p>
-              <p className="text-2xl font-bold text-white leading-none">{fmtPrice(convert(top.current, currency, fx), currency)}</p>
+              <p className="text-2xl font-black text-white leading-none">{fmtPrice(convert(top.current, currency, fx), currency)}</p>
               <p className="text-xs text-white/30 mt-0.5">/kg</p>
             </div>
           )}
@@ -57,9 +54,9 @@ export function CategoryCard({ cat, currency, fx }: { cat: CategoryPrices; curre
         <table className="w-full min-w-[280px]">
           <thead>
             <tr className="border-b border-black/5">
-              <th className="py-2 px-3 sm:px-4 text-left text-xs text-black/25 font-medium">등급</th>
-              <th className="py-2 px-3 sm:px-4 text-right text-xs text-black/25 font-medium">이번 주</th>
-              <th className="py-2 px-3 sm:px-4 text-right text-xs text-black/25 font-medium">전주 대비</th>
+              <th className="py-2 px-3 sm:px-4 text-left text-xs text-black/25 font-bold">등급</th>
+              <th className="py-2 px-3 sm:px-4 text-right text-xs text-black/25 font-bold">이번 주</th>
+              <th className="py-2 px-3 sm:px-4 text-right text-xs text-black/25 font-bold">전주 대비</th>
             </tr>
           </thead>
           <tbody>
@@ -73,8 +70,7 @@ export function CategoryCard({ cat, currency, fx }: { cat: CategoryPrices; curre
   );
 }
 
-// ─── CFD 등급별 비교 차트 ────────────────────────
-const CFD_CHART_COLORS = [KEY, '#000000'];
+const CFD_CHART_COLORS = ['#111111', '#888888'];
 const CFD_GRADES = ['70%', '80%', '90%', '95%'];
 
 export function CfdBarChart({ categories, currency, fx, label }: {
@@ -91,9 +87,9 @@ export function CfdBarChart({ categories, currency, fx, label }: {
   });
 
   return (
-    <div className="border border-black/6 rounded-2xl overflow-hidden">
+    <div className="border border-black/8 overflow-hidden">
       <div className="px-5 py-4 border-b border-black/5">
-        <p className="text-xs font-semibold text-black/40 uppercase tracking-widest">{label} — 등급별 시세 비교</p>
+        <p className="text-xs font-bold text-black/40 uppercase tracking-widest">{label} — 등급별 시세 비교</p>
       </div>
       <div className="px-4 py-5">
         <ResponsiveContainer width="100%" height={240}>
@@ -102,8 +98,8 @@ export function CfdBarChart({ categories, currency, fx, label }: {
             <XAxis dataKey="grade" tick={{ fontSize: 11, fill: 'rgba(0,0,0,0.35)' }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 11, fill: 'rgba(0,0,0,0.35)' }} axisLine={false} tickLine={false} tickFormatter={v => `${sym}${v}`} width={56} />
             <Tooltip
-              contentStyle={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
-              labelStyle={{ color: 'rgba(0,0,0,0.75)', fontWeight: 600 }}
+              contentStyle={{ border: '1px solid rgba(0,0,0,0.1)', borderRadius: 0, fontSize: 12 }}
+              labelStyle={{ color: 'rgba(0,0,0,0.75)', fontWeight: 700 }}
               itemStyle={{ fontWeight: 700 }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               formatter={(v: any) => [`${sym}${fmtNum(Number(v ?? 0))}/kg`]}
@@ -111,7 +107,7 @@ export function CfdBarChart({ categories, currency, fx, label }: {
             />
             <Legend wrapperStyle={{ fontSize: 11, color: 'rgba(0,0,0,0.45)', paddingTop: 8 }} />
             {categories.map((cat, idx) => (
-              <Bar key={cat.name} dataKey={cat.nameKr} fill={CFD_CHART_COLORS[idx % CFD_CHART_COLORS.length]} radius={[3, 3, 0, 0]} maxBarSize={36} />
+              <Bar key={cat.name} dataKey={cat.nameKr} fill={CFD_CHART_COLORS[idx % CFD_CHART_COLORS.length]} radius={[0, 0, 0, 0]} maxBarSize={36} />
             ))}
           </BarChart>
         </ResponsiveContainer>

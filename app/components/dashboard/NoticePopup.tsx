@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { KEY, fmtKst } from './constants';
+import { fmtKst } from './constants';
 
 interface Feedback { id: number; content: string; createdAt: string; }
 
@@ -74,35 +74,28 @@ export function NoticePopup() {
 
       {/* 딤 */}
       <div
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/35"
         style={{ animation: 'fade-in 0.2s ease' }}
       />
 
       {/* 패널 */}
       <div
-        className="relative bg-white shadow-2xl w-full overflow-hidden"
+        className="relative bg-white w-full overflow-hidden border border-black/10"
         style={isMobile ? {
           maxWidth: '100%',
-          borderRadius: '20px 20px 0 0',
+          borderRadius: 0,
           animation: 'sheet-up 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
         } : {
           maxWidth: '384px',
-          borderRadius: '16px',
+          borderRadius: 0,
           animation: 'fade-in 0.2s ease',
           margin: '16px',
         }}
         onClick={e => e.stopPropagation()}
       >
-        {/* 모바일 핸들 */}
-        {isMobile && (
-          <div className="flex justify-center pt-3 pb-1">
-            <div className="w-10 h-1 rounded-full bg-black/15" />
-          </div>
-        )}
-
         {/* 헤더 */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-black/6">
-          <span className="text-xs font-bold tracking-widest uppercase" style={{ color: KEY }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-black/8">
+          <span className="text-xs font-bold tracking-widest uppercase text-black/50">
             공지사항
           </span>
           <button onClick={close} className="text-black/30 hover:text-black transition-colors p-1">
@@ -120,14 +113,14 @@ export function NoticePopup() {
               <div key={n.id} className="space-y-1">
                 <div className="flex items-start gap-2">
                   {badge === 'update' && (
-                    <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
-                      style={{ backgroundColor: '#22c55e' }}>
+                    <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 text-white"
+                      style={{ backgroundColor: '#22c55e', borderRadius: 0 }}>
                       NEW
                     </span>
                   )}
                   {badge === 'notice' && (
-                    <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
-                      style={{ backgroundColor: '#1a1a1a' }}>
+                    <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 text-white"
+                      style={{ backgroundColor: '#1a1a1a', borderRadius: 0 }}>
                       공지
                     </span>
                   )}
@@ -146,14 +139,14 @@ export function NoticePopup() {
               type="checkbox"
               checked={skipToday}
               onChange={e => setSkipToday(e.target.checked)}
-              className="w-3.5 h-3.5 accent-black rounded"
+              className="w-3.5 h-3.5 accent-black"
             />
             <span className="text-xs text-black/40">오늘 하루 보지 않기</span>
           </label>
           <button
             onClick={close}
-            className="w-full py-2.5 rounded-xl text-sm font-semibold text-white"
-            style={{ backgroundColor: KEY }}
+            className="w-full py-2.5 text-sm font-bold text-white bg-[#111] transition-opacity hover:opacity-85"
+            style={{ borderRadius: 0 }}
           >
             확인
           </button>

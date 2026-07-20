@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import type { NewsItem } from '@/app/lib/types';
-import { KEY, KEY_BG, KEY_BORDER, PAGE_SIZE, fmtPubDate } from './constants';
+import { PAGE_SIZE, fmtPubDate } from './constants';
 import { SectionLabel } from './SectionLabel';
 
-// ─── 뉴스 카드 ───────────────────────────────────
 function NewsCard({ item, index }: { item: NewsItem; index: number }) {
   return (
     <li className="flex items-start gap-4 px-5 py-3.5 hover:bg-black/[0.02] transition-colors">
@@ -21,18 +20,18 @@ function NewsCard({ item, index }: { item: NewsItem; index: number }) {
           {item.pubDate && <span className="text-xs text-black/25">{fmtPubDate(item.pubDate)}</span>}
         </div>
       </div>
-      <a href={item.link} target="_blank" rel="noopener noreferrer"
-        className="shrink-0 text-xs px-2.5 py-1 rounded-md border transition-colors"
-        style={{ borderColor: KEY_BORDER, color: KEY }}
-        onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = KEY_BG; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'transparent'; }}>
+      <a
+        href={item.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="shrink-0 text-xs px-2.5 py-1 border border-black/10 text-black/40 hover:text-black hover:border-black/30 transition-colors"
+      >
         기사 보기
       </a>
     </li>
   );
 }
 
-// ─── 뉴스 섹션 ───────────────────────────────────
 function NewsSectionBase({ title, subtitle, apiPath, sourceNote }: {
   title: string; subtitle: string; apiPath: string; sourceNote: string;
 }) {
@@ -50,15 +49,11 @@ function NewsSectionBase({ title, subtitle, apiPath, sourceNote }: {
 
   const totalPages = Math.ceil(news.length / PAGE_SIZE);
   const paged = news.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-  const pageBtnStyle = (disabled: boolean) =>
-    disabled
-      ? { borderColor: 'rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.3)' }
-      : { borderColor: KEY, color: KEY };
 
   return (
     <section>
       <SectionLabel title={title} sub={subtitle} />
-      <div className="rounded-xl border border-black/8 overflow-hidden" style={{ borderTop: `2px solid ${KEY}` }}>
+      <div className="border border-black/8 overflow-hidden" style={{ borderTop: '2px solid #111' }}>
         {loading && <div className="flex items-center justify-center py-12 text-sm text-black/30">뉴스를 불러오는 중...</div>}
         {!loading && error && <div className="flex items-center justify-center py-12 text-sm text-black/30">뉴스를 가져오지 못했습니다.</div>}
         {!loading && !error && news.length === 0 && <div className="flex items-center justify-center py-12 text-sm text-black/30">표시할 뉴스가 없습니다.</div>}
@@ -72,17 +67,17 @@ function NewsSectionBase({ title, subtitle, apiPath, sourceNote }: {
             <button
               onClick={() => setPage(p => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="text-xs font-medium px-3 py-1 rounded-md border transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
-              style={pageBtnStyle(page === 0)}
+              className="text-xs font-bold px-3 py-1 border border-black/10 text-black/40 hover:text-black hover:border-black/30 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
+              style={{ borderRadius: 0 }}
             >← 이전</button>
-            <span className="text-xs font-medium text-black/50 px-1">
+            <span className="text-xs font-bold text-black/50 px-1">
               {page + 1} <span className="text-black/25 font-normal">/ {totalPages}</span>
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
               disabled={page === totalPages - 1}
-              className="text-xs font-medium px-3 py-1 rounded-md border transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
-              style={pageBtnStyle(page === totalPages - 1)}
+              className="text-xs font-bold px-3 py-1 border border-black/10 text-black/40 hover:text-black hover:border-black/30 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
+              style={{ borderRadius: 0 }}
             >다음 →</button>
           </div>
         )}
@@ -94,7 +89,6 @@ function NewsSectionBase({ title, subtitle, apiPath, sourceNote }: {
   );
 }
 
-// ─── 뉴스 설정 ───────────────────────────────────
 export const NEWS_CONFIGS = [
   { id: 'sec-news-kr', title: '국내 뉴스', subtitle: '거위털 · 오리털 · 구스이불', apiPath: '/api/news-kr', sourceNote: '출처: 네이버 뉴스 검색 API · 국내 언론사 기준' },
   { id: 'sec-news',    title: '해외 뉴스', subtitle: '거위털 · 오리털 · 침구류',   apiPath: '/api/news',    sourceNote: '출처: Google News RSS · 해외 영문 뉴스 기준' },

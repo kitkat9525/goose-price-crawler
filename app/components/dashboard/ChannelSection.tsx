@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { KEY } from './constants';
 import { SectionLabel } from './SectionLabel';
 
 interface VideoItem {
@@ -101,14 +100,14 @@ function SubscriberChart({ snapshots }: { snapshots: Snapshot[] }) {
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 80 }}>
         <defs>
           <linearGradient id="sub-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={KEY} stopOpacity="0.18" />
-            <stop offset="100%" stopColor={KEY} stopOpacity="0" />
+            <stop offset="0%" stopColor="#111" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="#111" stopOpacity="0" />
           </linearGradient>
         </defs>
         {/* 영역 */}
         <path d={area} fill="url(#sub-grad)" />
         {/* 선 */}
-        <polyline points={pts} fill="none" stroke={KEY} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+        <polyline points={pts} fill="none" stroke="#111" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
         {/* Y축 눈금 */}
         <text x={PAD.left - 4} y={PAD.top + 4} fontSize="8" fill="rgba(0,0,0,0.3)" textAnchor="end">{fmtSub(maxV)}</text>
         <text x={PAD.left - 4} y={PAD.top + innerH} fontSize="8" fill="rgba(0,0,0,0.3)" textAnchor="end">{fmtSub(minV)}</text>
@@ -116,7 +115,7 @@ function SubscriberChart({ snapshots }: { snapshots: Snapshot[] }) {
         <text x={PAD.left} y={H - 4} fontSize="8" fill="rgba(0,0,0,0.25)" textAnchor="start">{dateFirst}</text>
         <text x={W - PAD.right} y={H - 4} fontSize="8" fill="rgba(0,0,0,0.25)" textAnchor="end">{dateLast}</text>
         {/* 마지막 점 */}
-        <circle cx={xScale(snapshots.length - 1)} cy={yScale(vals[vals.length - 1])} r="3" fill={KEY} />
+        <circle cx={xScale(snapshots.length - 1)} cy={yScale(vals[vals.length - 1])} r="3" fill="#111" />
       </svg>
     </div>
   );
@@ -138,7 +137,7 @@ function VideoCard({ v, rank }: { v: VideoItem; rank?: number }) {
       href={`https://www.youtube.com/watch?v=${v.id}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex gap-3 items-start p-2 rounded-xl hover:bg-black/[0.03] transition-colors group"
+      className="flex gap-3 items-start p-2 hover:bg-black/[0.03] transition-colors group"
       style={{ textDecoration: 'none', color: 'inherit' }}
     >
       {rank !== undefined && (
@@ -148,8 +147,8 @@ function VideoCard({ v, rank }: { v: VideoItem; rank?: number }) {
       )}
       <div className="relative shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={v.thumbnail} alt={v.title} className="w-28 h-16 object-cover rounded-lg" />
-        <span className="absolute bottom-1 right-1 text-[9px] font-bold text-white bg-black/70 px-1 rounded">
+        <img src={v.thumbnail} alt={v.title} className="w-28 h-16 object-cover" />
+        <span className="absolute bottom-1 right-1 text-[9px] font-bold text-white bg-black/70 px-1">
           {v.duration}
         </span>
       </div>
@@ -174,10 +173,6 @@ export function ChannelSection() {
   const [tab, setTab] = useState<'top' | 'latest'>('top');
 
   useEffect(() => {
-    window.open('https://playboard.co/channel/UChuq17DrAiJwkpxNajkEDYw', '_blank', 'noopener,noreferrer');
-  }, []);
-
-  useEffect(() => {
     fetch('/api/youtube-channel')
       .then(r => r.json())
       .then(d => { if (!d.error) setData(d); })
@@ -194,10 +189,10 @@ export function ChannelSection() {
       {!loading && data && (
         <div className="space-y-5">
           {/* 채널 스탯 */}
-          <div className="flex items-center gap-4 p-4 rounded-2xl border border-black/6 bg-black/[0.01]">
+          <div className="flex items-center gap-4 p-4 border border-black/6 bg-black/[0.01]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={data.channel.thumbnail} alt={data.channel.title}
-              className="w-12 h-12 rounded-full object-cover shrink-0" />
+              className="w-12 h-12 object-cover shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-black/85">{data.channel.title}</p>
               <p className="text-[10px] text-black/30 mt-0.5">개설 {fmtDate(data.channel.publishedAt)}</p>
@@ -210,7 +205,7 @@ export function ChannelSection() {
                 ...(data.avgUploadInterval ? [{ val: `${data.avgUploadInterval}일`, lbl: '업로드 주기' }] : []),
               ].map(s => (
                 <div key={s.lbl} className="text-center">
-                  <p className="text-sm font-bold" style={{ color: KEY }}>{s.val}</p>
+                  <p className="text-sm font-black text-black">{s.val}</p>
                   <p className="text-[9px] text-black/30 mt-0.5">{s.lbl}</p>
                 </div>
               ))}
@@ -219,22 +214,26 @@ export function ChannelSection() {
 
           {/* 구독자 트렌드 */}
           {data.snapshots?.length > 0 && (
-            <div className="px-4 py-3 rounded-2xl border border-black/6 bg-black/[0.01]">
+            <div className="px-4 py-3 border border-black/6 bg-black/[0.01]">
               <SubscriberChart snapshots={data.snapshots} />
             </div>
           )}
 
           {/* 탭 */}
-          <div className="flex gap-1">
+          <div className="flex border-b border-black/5">
             {(['top', 'latest'] as const).map(t => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
-                style={tab === t
-                  ? { backgroundColor: KEY, color: '#fff' }
-                  : { color: 'rgba(0,0,0,0.35)' }
-                }
+                className="text-xs font-bold px-3 whitespace-nowrap transition-colors bg-transparent cursor-pointer"
+                style={{
+                  paddingTop: 8,
+                  paddingBottom: 8,
+                  marginBottom: -1,
+                  border: 'none',
+                  borderBottom: tab === t ? '2px solid #111' : '2px solid transparent',
+                  color: tab === t ? '#111' : 'rgba(0,0,0,0.35)',
+                }}
               >
                 {t === 'top' ? '인기 TOP 5' : '최신 5편'}
               </button>

@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-
-const KEY = '#AA8E5C';
 
 const STEPS = [
   'CFD 중국우모협회 시세 조회 중',
@@ -16,23 +14,12 @@ const STEPS = [
 export default function IntroPage() {
   const router = useRouter();
 
-  // 로그인 상태
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername]     = useState('');
+  const [password, setPassword]     = useState('');
   const [loginError, setLoginError] = useState('');
-  const [loggedIn, setLoggedIn] = useState(false);
-
-  // 크롤링 상태
-  const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(0);
-  const [done, setDone] = useState(false);
-  const [dotCount, setDotCount] = useState(1);
-
-  useEffect(() => {
-    if (!loading || done) return;
-    const id = setInterval(() => setDotCount(d => d >= 5 ? 1 : d + 1), 400);
-    return () => clearInterval(id);
-  }, [loading, done]);
+  const [loading, setLoading]       = useState(false);
+  const [step, setStep]             = useState(0);
+  const [done, setDone]             = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -43,7 +30,6 @@ export default function IntroPage() {
       body: JSON.stringify({ username, password }),
     });
     if (res.ok) {
-      setLoggedIn(true);
       handleStart();
     } else {
       const json = await res.json();
@@ -69,35 +55,46 @@ export default function IntroPage() {
     setTimeout(() => router.push('/dashboard'), 400);
   }
 
+  function stepStatus(i: number): 'idle' | 'active' | 'done' {
+    if (done || i < step) return 'done';
+    if (i === step) return 'active';
+    return 'idle';
+  }
+
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col sm:grid sm:grid-cols-[1fr_400px]">
 
-      {/* 상단 바 */}
-      <header className="px-8 py-6 flex items-center justify-between border-b border-black/6">
-        <span className="text-xs font-mono text-black/30 tracking-widest uppercase">구초뉴스</span>
-        <span className="text-xs text-black/25">참고용 데이터</span>
-      </header>
+      {/* 왼쪽: 로고 */}
+      <div className="flex items-center justify-center py-14 sm:py-0 border-b sm:border-b-0 sm:border-r border-black/8">
+        <Image
+          src="/logo.png"
+          alt="구초뉴스"
+          width={200}
+          height={200}
+          priority
+          className="object-contain w-32 h-32 sm:w-48 sm:h-48"
+        />
+      </div>
 
-      {/* 메인 */}
-      <main className="flex-1 flex flex-col items-center justify-center px-8">
-
-        {/* 로고 */}
-        <div className="mb-8 select-none">
-          <Image src="/logo.png" alt="로고" width={300} height={300} priority className="object-contain w-48 h-48 sm:w-72 sm:h-72" />
-        </div>
-
-        <div className="mb-10" />
+      {/* 오른쪽: 로그인 / 로딩 */}
+      <div className="flex items-center justify-center p-8 sm:p-10">
 
         {/* 로그인 폼 */}
-        {!loggedIn && !loading && (
-          <form onSubmit={handleLogin} className="w-full max-w-xs space-y-3">
+        {!loading && (
+          <form onSubmit={handleLogin} className="w-full max-w-[280px] flex flex-col gap-2">
+            <p className="text-[22px] font-black tracking-tight mb-1.5">안녕하세요</p>
+            <p className="text-xs leading-relaxed mb-6" style={{ color: 'rgba(17,17,17,0.45)' }}>
+              인증된 사용자만 접근할 수 있습니다.<br />
+              아이디와 비밀번호를 입력해 주세요.
+            </p>
             <input
               type="text"
               placeholder="아이디"
               value={username}
               onChange={e => setUsername(e.target.value)}
               autoComplete="username"
-              className="w-full text-sm text-black border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:border-black/30 transition-colors placeholder:text-black/25"
+              className="w-full text-sm text-black border border-black/10 px-4 py-3 outline-none transition-colors placeholder:text-black/25 focus:border-black/40"
+              style={{ borderRadius: 0 }}
             />
             <input
               type="password"
@@ -105,7 +102,8 @@ export default function IntroPage() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               autoComplete="current-password"
-              className="w-full text-sm text-black border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:border-black/30 transition-colors placeholder:text-black/25"
+              className="w-full text-sm text-black border border-black/10 px-4 py-3 outline-none transition-colors placeholder:text-black/25 focus:border-black/40"
+              style={{ borderRadius: 0 }}
             />
             {loginError && (
               <p className="text-xs text-red-400 text-center">{loginError}</p>
@@ -113,58 +111,51 @@ export default function IntroPage() {
             <button
               type="submit"
               disabled={!username || !password}
-              className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-40"
-              style={{ backgroundColor: KEY }}
+              className="w-full mt-1 py-3 text-sm font-bold text-white bg-[#111] transition-opacity disabled:opacity-40"
+              style={{ borderRadius: 0 }}
             >
               로그인
             </button>
           </form>
         )}
 
-        {/* 크롤링 중 */}
+        {/* 로딩 */}
         {loading && (
-          <div className="flex flex-col items-center gap-6">
-            <div className="flex items-center gap-3">
-              {[1, 2, 3, 4, 5].map(i => {
-                const active = done ? true : i <= dotCount;
+          <div className="w-full max-w-[280px] flex flex-col gap-6">
+            <p className="text-[22px] font-black tracking-tight">데이터 로딩 중</p>
+            <div style={{ borderTop: '1px solid rgba(17,17,17,0.08)' }}>
+              {STEPS.map((label, i) => {
+                const status = stepStatus(i);
                 return (
                   <div
                     key={i}
-                    className="rounded-full overflow-hidden border-2 transition-all duration-300"
+                    className="flex items-center gap-3 py-3 text-xs transition-colors"
                     style={{
-                      width: 72,
-                      height: 72,
-                      borderColor: active ? KEY : 'rgba(0,0,0,0.08)',
-                      opacity: active ? 1 : 0,
-                      transform: active ? 'scale(1)' : 'scale(0.5)',
+                      borderBottom: '1px solid rgba(17,17,17,0.08)',
+                      color: status === 'idle' ? 'rgba(17,17,17,0.35)' : '#111',
                     }}
                   >
-                    <Image src="/loading.png" alt="" width={72} height={72} className="object-cover w-full h-full" />
+                    <span
+                      className="text-[10px] font-bold tracking-widest shrink-0 w-5"
+                      style={{ color: 'rgba(17,17,17,0.28)' }}
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="flex-1">{label}</span>
+                    <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>
+                      {status === 'done' ? '✓' : status === 'active' ? '●' : '—'}
+                    </span>
                   </div>
                 );
               })}
             </div>
-
-            {!done ? (
-              <p className="text-sm text-black/45 font-medium tracking-wide">{STEPS[step]}</p>
-            ) : (
-              <p className="text-sm font-medium text-black flex items-center gap-1.5">
-                <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                이동 중...
-              </p>
+            {done && (
+              <p className="text-xs" style={{ color: 'rgba(17,17,17,0.4)' }}>이동 중...</p>
             )}
           </div>
         )}
-      </main>
 
-      {/* 하단 바 */}
-      <footer className="px-8 py-6 border-t border-black/6 flex items-center justify-between">
-        <span className="text-xs text-black/25">데이터 출처: CFD 중국우모협회 · 관세청 공공데이터 · open.er-api.com</span>
-        <span className="text-xs text-black/20">© 2026</span>
-      </footer>
+      </div>
     </div>
   );
 }

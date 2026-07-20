@@ -56,7 +56,7 @@ export function CertSection() {
             href={cert.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-col items-center gap-2 p-3 rounded-xl border border-black/6 hover:border-black/15 transition-all group"
+            className="flex flex-col items-center gap-2 p-3 rounded-none border border-black/6 hover:border-black/15 transition-all group"
           >
             <div className="w-14 h-14 relative flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
