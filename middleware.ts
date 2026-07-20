@@ -14,7 +14,7 @@ async function isAuthenticated(req: NextRequest): Promise<boolean> {
   }
 }
 
-export async function proxy(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // 이미 로그인된 상태에서 인트로 화면 접근 → 대시보드로

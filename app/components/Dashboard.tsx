@@ -91,6 +91,30 @@ function fmtDate(iso: string) {
   catch { return ''; }
 }
 
+// ── HeroPanel ─────────────────────────────────────────────────
+function HeroPanel({ tag, title, entry, currency, fx, noBorder }: { tag: string; title: string; entry?: PriceEntry; currency: Currency; fx: FxRates; noBorder?: boolean }) {
+  const price = entry ? convert(entry.current, currency, fx) : null;
+  const diff  = entry ? convert(Math.abs(entry.diff), currency, fx) : null;
+  const down  = entry ? entry.diff <= 0 : true;
+  return (
+    <div style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderBottom: noBorder ? 'none' : '1px solid #ebebeb' }}>
+      <div>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: 'rgba(17,17,17,0.28)', textTransform: 'uppercase' }}>{tag}</p>
+        <p style={{ fontSize: 22, fontWeight: 900, letterSpacing: -0.5, lineHeight: 1.2, marginTop: 6, color: '#111' }}>{title}</p>
+      </div>
+      <div>
+        {price != null ? (
+          <>
+            <p style={{ fontSize: 40, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#111' }}>{fmtPrice(price, currency)}</p>
+            <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.3)', marginTop: 3 }}>90% 기준 /kg</p>
+            {diff != null && <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 2, background: '#f0f0f0', marginTop: 6, color: '#111' }}>{down ? '▼' : '▲'} {fmtPrice(diff, currency)}</span>}
+          </>
+        ) : <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.25)' }}>데이터 없음</p>}
+      </div>
+    </div>
+  );
+}
+
 // ── 공통 섹션 헤더 ────────────────────────────────────────────
 function SecHdr({ tag, title, sub, subRed }: { tag: string; title: string; sub?: string; subRed?: boolean }) {
   return (
@@ -371,19 +395,21 @@ function ShoppingCarousel({ query }: { query: string }) {
   const scrollRef                 = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    startRef.current = 1; setLoading(true); setHasMore(true);
-    fetch(`/api/shopping?query=${encodeURIComponent(query)}&start=1`)
-      .then(r => r.json())
-      .then(d => {
+    startRef.current = 1;
+    void (async () => {
+      setLoading(true);
+      setHasMore(true);
+      try {
+        const r = await fetch(`/api/shopping?query=${encodeURIComponent(query)}&start=1`);
+        const d = await r.json();
         if (d.error === 'naver_key_missing') { setNoKey(true); }
         else {
           const it: ShoppingItem[] = d.items ?? [];
           setItems(it);
           if (it.length < 20) setHasMore(false); else startRef.current = 21;
         }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      } catch {} finally { setLoading(false); }
+    })();
   }, [query]);
 
   const fetchMore = useCallback(() => {
@@ -789,29 +815,6 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
   const UBTN: React.CSSProperties = { fontSize: 11, fontWeight: 500, padding: '5px 6px', borderRadius: 99, border: 'none', background: 'none', color: 'rgba(17,17,17,0.38)', cursor: 'pointer', fontFamily: 'inherit' };
   const SEC: React.CSSProperties = { padding: '32px 40px', borderBottom: '1px solid #ebebeb' };
 
-  function HeroPanel({ tag, title, entry, noBorder }: { tag: string; title: string; entry?: PriceEntry; noBorder?: boolean }) {
-    const price = entry ? convert(entry.current, currency, fx) : null;
-    const diff  = entry ? convert(Math.abs(entry.diff), currency, fx) : null;
-    const down  = entry ? entry.diff <= 0 : true;
-    return (
-      <div style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderBottom: noBorder ? 'none' : '1px solid #ebebeb' }}>
-        <div>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: 'rgba(17,17,17,0.28)', textTransform: 'uppercase' }}>{tag}</p>
-          <p style={{ fontSize: 22, fontWeight: 900, letterSpacing: -0.5, lineHeight: 1.2, marginTop: 6, color: '#111' }}>{title}</p>
-        </div>
-        <div>
-          {price != null ? (
-            <>
-              <p style={{ fontSize: 40, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#111' }}>{fmtPrice(price, currency)}</p>
-              <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.3)', marginTop: 3 }}>90% 기준 /kg</p>
-              {diff != null && <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 2, background: '#f0f0f0', marginTop: 6, color: '#111' }}>{down ? '▼' : '▲'} {fmtPrice(diff, currency)}</span>}
-            </>
-          ) : <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.25)' }}>데이터 없음</p>}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div style={{ minWidth: 1024, background: '#fff', color: '#111' }}>
       <NoticePopup />
@@ -896,8 +899,8 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
         </div>
 
         <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr' }}>
-          <HeroPanel tag="백거위털 · 중국의류표준" title="화이트 구스다운" entry={wg90} />
-          <HeroPanel tag="회거위털 · 중국의류표준" title="그레이 구스다운" entry={gg90} noBorder />
+          <HeroPanel tag="백거위털 · 중국의류표준" title="화이트 구스다운" entry={wg90} currency={currency} fx={fx} />
+          <HeroPanel tag="회거위털 · 중국의류표준" title="그레이 구스다운" entry={gg90} currency={currency} fx={fx} noBorder />
         </div>
       </div>
 

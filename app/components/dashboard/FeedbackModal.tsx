@@ -68,7 +68,7 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
           {feedbacks.length === 0 && (
             <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.3)', textAlign: 'center', padding: '16px 0' }}>아직 의견이 없습니다</p>
           )}
-          {feedbacks.map((f, i) => (
+          {feedbacks.map((f) => (
             <div key={f.id} style={{ padding: '14px 24px', borderTop: '1px solid #ebebeb', transition: 'background 0.1s' }}
               onMouseEnter={e => (e.currentTarget.style.background = '#f9f9f9')}
               onMouseLeave={e => (e.currentTarget.style.background = '#fff')}

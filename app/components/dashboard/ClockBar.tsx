@@ -94,7 +94,7 @@ function AnalogClock({ tz }: { tz: string }) {
 export function ClockBar() {
   return (
     <>
-      {COUNTRIES.map((c, i) => {
+      {COUNTRIES.map((c) => {
         const { h, m } = getTimeParts(c.tz);
         const pad = (n: number) => String(n).padStart(2, '0');
         return (

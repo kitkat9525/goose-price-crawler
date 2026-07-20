@@ -36,7 +36,13 @@ export function NoticePopup() {
   const [isMobile, setIsMobile]   = useState(false);
 
   useEffect(() => {
-    setIsMobile(window.innerWidth < 640);
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
     if (localStorage.getItem(NOTICE_KEY) === today) return;
 
