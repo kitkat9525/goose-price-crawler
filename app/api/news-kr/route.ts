@@ -179,11 +179,21 @@ async function fetchGoogleRss(query: string): Promise<NewsItem[]> {
 // ──────────────────────────────────────────────
 // GET
 // ──────────────────────────────────────────────
-export async function GET() {
+const KW_QUERIES: Record<string, string[]> = {
+  '거위털': ['거위털', '구스다운'],
+  '오리털': ['오리털', '덕다운'],
+  '구스이불': ['구스이불', '구스베개', '구스토퍼'],
+};
+const DEFAULT_QUERIES = ['거위털', '오리털', '구스이불', '구스다운', '덕다운', '우모 수입', '침구 원자재'];
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const kw = searchParams.get('q');
+
   const clientId     = process.env.NAVER_CLIENT_ID;
   const clientSecret = process.env.NAVER_CLIENT_SECRET;
 
-  const queries = ['거위털', '오리털', '구스이불', '구스다운', '덕다운', '우모 수입', '침구 원자재'];
+  const queries = kw && KW_QUERIES[kw] ? KW_QUERIES[kw] : DEFAULT_QUERIES;
 
   let all: NewsItem[];
 
