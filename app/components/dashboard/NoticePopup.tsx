@@ -107,14 +107,15 @@ export function NoticePopup() {
 
         {/* 공지 목록 */}
         <div className="px-5 py-4 max-h-72 overflow-y-auto space-y-3">
-          {notices.map(n => {
+          {notices.map((n, idx) => {
             const { badge, body } = parseNotice(n.content);
+            const isLatest = idx === 0;
             return (
               <div key={n.id} className="space-y-1">
                 <div className="flex items-start gap-2">
                   {badge === 'update' && (
                     <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 text-white"
-                      style={{ backgroundColor: '#22c55e', borderRadius: 0 }}>
+                      style={{ backgroundColor: isLatest ? '#22c55e' : '#999', borderRadius: 0 }}>
                       NEW
                     </span>
                   )}
@@ -148,7 +149,7 @@ export function NoticePopup() {
             className="w-full py-2.5 text-sm font-bold text-white bg-[#111] transition-opacity hover:opacity-85"
             style={{ borderRadius: 0 }}
           >
-            확인
+            닫기
           </button>
         </div>
       </div>
