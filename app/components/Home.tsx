@@ -10,10 +10,10 @@ import {
 import type { AggregatedData, FxRates, CategoryPrices, PriceEntry, CustomsMonthData } from '@/app/lib/aggregate';
 import type { NewsItem } from '@/app/lib/types';
 import { CUSTOMS_HS_NOTE } from '@/app/lib/sources/customs';
-import { ClockBar }      from './dashboard/ClockBar';
-import { FeedbackModal } from './dashboard/FeedbackModal';
-import { HelpModal }     from './dashboard/HelpModal';
-import { NoticePopup }   from './dashboard/NoticePopup';
+import { ClockBar }      from './home/ClockBar';
+import { FeedbackModal } from './home/FeedbackModal';
+import { HelpModal }     from './home/HelpModal';
+import { NoticePopup }   from './home/NoticePopup';
 
 // ── 상수 ──────────────────────────────────────────────────────
 const KEY = '#AA8E5C';

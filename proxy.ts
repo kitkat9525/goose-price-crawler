@@ -17,15 +17,15 @@ async function isAuthenticated(req: NextRequest): Promise<boolean> {
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // 이미 로그인된 상태에서 인트로 화면 접근 → 대시보드로
+  // 이미 로그인된 상태에서 로그인 화면 접근 → 홈으로
   if (pathname === '/') {
     if (await isAuthenticated(req)) {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+      return NextResponse.redirect(new URL('/home', req.url));
     }
     return NextResponse.next();
   }
 
-  // 대시보드 접근 시 인증 확인
+  // 홈 접근 시 인증 확인
   if (await isAuthenticated(req)) {
     return NextResponse.next();
   }
@@ -36,5 +36,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/dashboard/:path*'],
+  matcher: ['/', '/home/:path*'],
 };

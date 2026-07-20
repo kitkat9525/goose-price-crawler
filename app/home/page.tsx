@@ -1,18 +1,18 @@
 import { aggregate } from '@/app/lib/aggregate';
-import Dashboard from '@/app/components/Dashboard';
-import MobileDashboard from '@/app/components/MobileDashboard';
+import Home from '@/app/components/Home';
+import MobileHome from '@/app/components/MobileHome';
 
 export const dynamic = 'force-dynamic';
 
-export default async function DashboardPage() {
+export default async function HomePage() {
   const data = await aggregate();
   return (
     <>
       <div className="hidden md:block">
-        <Dashboard data={data} />
+        <Home data={data} />
       </div>
       <div className="md:hidden">
-        <MobileDashboard data={data} />
+        <MobileHome data={data} />
       </div>
     </>
   );

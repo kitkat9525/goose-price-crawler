@@ -11,7 +11,7 @@ const STEPS = [
   '데이터 정리 중',
 ];
 
-export default function IntroPage() {
+export default function LoginPage() {
   const router = useRouter();
 
   const [username, setUsername]     = useState('');
@@ -52,7 +52,7 @@ export default function IntroPage() {
 
     timers.forEach(clearTimeout);
     setDone(true);
-    setTimeout(() => router.push('/dashboard'), 400);
+    setTimeout(() => router.push('/home'), 400);
   }
 
   function stepStatus(i: number): 'idle' | 'active' | 'done' {
