@@ -64,25 +64,25 @@ export default function IntroPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col sm:grid sm:grid-cols-[1fr_400px]">
 
-      {/* 왼쪽: 로고 */}
-      <div className="flex items-center justify-center py-14 sm:py-0 border-b sm:border-b-0 sm:border-r border-black/8">
+      {/* 로고 */}
+      <div className="flex-1 flex items-center justify-center py-14 sm:py-0 sm:flex-none sm:border-r border-black/8">
         <Image
           src="/logo.png"
           alt="구초뉴스"
           width={200}
           height={200}
           priority
-          className="object-contain w-32 h-32 sm:w-48 sm:h-48"
+          className="object-contain w-48 h-48 sm:w-48 sm:h-48"
         />
       </div>
 
-      {/* 오른쪽: 로그인 / 로딩 */}
-      <div className="flex items-center justify-center p-8 sm:p-10">
+      {/* 로그인 / 로딩 */}
+      <div className="flex items-center justify-center p-8 pb-16 sm:p-10">
 
         {/* 로그인 폼 */}
         {!loading && (
           <form onSubmit={handleLogin} className="w-full max-w-[280px] flex flex-col gap-2">
-            <p className="text-[22px] font-black tracking-tight mb-1.5">안녕하세요</p>
+            <p className="text-[22px] font-black tracking-tight mb-1.5 text-black">안녕하세요</p>
             <p className="text-xs leading-relaxed mb-6" style={{ color: 'rgba(17,17,17,0.45)' }}>
               인증된 사용자만 접근할 수 있습니다.<br />
               아이디와 비밀번호를 입력해 주세요.

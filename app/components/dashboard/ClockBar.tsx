@@ -93,22 +93,31 @@ function AnalogClock({ tz }: { tz: string }) {
 
 export function ClockBar() {
   return (
-    <div className="grid grid-cols-5 gap-2">
-      {COUNTRIES.map(c => {
+    <>
+      {COUNTRIES.map((c, i) => {
         const { h, m } = getTimeParts(c.tz);
         const pad = (n: number) => String(n).padStart(2, '0');
         return (
-          <div key={c.tz} className="flex flex-col items-center gap-1.5">
+          <div
+            key={c.tz}
+            style={{
+              padding: '18px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              borderRight: 'none',
+            }}
+          >
             <AnalogClock tz={c.tz} />
-            <div className="flex flex-col items-center gap-0">
-              <p className="text-[11px] font-bold text-black/75">{c.name}</p>
-              <p className="text-[13px] font-semibold tabular-nums text-black/60">
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(17,17,17,0.4)' }}>{c.name}</p>
+              <p style={{ fontSize: 17, fontWeight: 900, letterSpacing: -0.4, marginTop: 1 }}>
                 {pad(h)}:{pad(m)}
               </p>
             </div>
           </div>
         );
       })}
-    </div>
+    </>
   );
 }

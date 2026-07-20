@@ -6,26 +6,23 @@ import { fmtKst } from './constants';
 interface Feedback { id: number; content: string; createdAt: string; }
 
 export function FeedbackModal({ onClose }: { onClose: () => void }) {
-  const [tab, setTab]         = useState<'write' | 'list'>('write');
   const [content, setContent] = useState('');
   const [status, setStatus]   = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const [feedbacks, setFeedbacks]   = useState<Feedback[]>([]);
-  const [loadingList, setLoadingList] = useState(false);
-
-  async function loadFeedbacks() {
-    setLoadingList(true);
-    try {
-      const res = await fetch('/api/feedback');
-      const json = await res.json();
-      setFeedbacks(json.feedbacks ?? []);
-    } catch {}
-    setLoadingList(false);
-  }
+  const [loadingList, setLoadingList] = useState(true);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (tab === 'list') loadFeedbacks();
-  }, [tab]);
+    async function load() {
+      setLoadingList(true);
+      try {
+        const res = await fetch('/api/feedback');
+        const json = await res.json();
+        setFeedbacks(json.feedbacks ?? []);
+      } catch {}
+      setLoadingList(false);
+    }
+    load();
+  }, []);
 
   async function handleSend() {
     if (!content.trim()) return;
@@ -36,99 +33,81 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content }),
       });
-      if (res.ok) { setStatus('done'); setContent(''); }
-      else setStatus('error');
+      if (res.ok) {
+        setStatus('done');
+        setContent('');
+        const res2 = await fetch('/api/feedback');
+        const json = await res2.json();
+        setFeedbacks(json.feedbacks ?? []);
+        setTimeout(() => setStatus('idle'), 2000);
+      } else setStatus('error');
     } catch { setStatus('error'); }
   }
 
+  if (loadingList) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/40" />
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={onClose}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
       <div
-        className="relative bg-white w-full max-w-md overflow-hidden border border-black/10"
-        style={{ borderRadius: 0 }}
+        style={{ position: 'relative', background: '#fff', width: '100%', maxWidth: 480, borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)', fontFamily: "'Pretendard', system-ui, sans-serif" }}
         onClick={e => e.stopPropagation()}
       >
         {/* 헤더 */}
-        <div className="flex items-center justify-between px-5 border-b border-black/8">
-          <div className="flex gap-0">
-            {(['write', 'list'] as const).map(t => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className="text-xs font-bold px-3 whitespace-nowrap transition-colors bg-transparent cursor-pointer"
-                style={{
-                  paddingTop: 12,
-                  paddingBottom: 12,
-                  marginBottom: -1,
-                  border: 'none',
-                  borderBottom: tab === t ? '2px solid #111' : '2px solid transparent',
-                  color: tab === t ? '#111' : 'rgba(0,0,0,0.35)',
-                }}
-              >
-                {t === 'write' ? '의견 보내기' : '의견 목록'}
-              </button>
-            ))}
-          </div>
-          <button onClick={onClose} className="text-black/30 hover:text-black transition-colors p-1">
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid #ebebeb' }}>
+          <p style={{ fontSize: 15, fontWeight: 700, color: '#111', margin: 0, letterSpacing: -0.3 }}>의견</p>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(17,17,17,0.35)', lineHeight: 1 }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </button>
         </div>
 
-        {/* 작성 탭 */}
-        {tab === 'write' && (
-          <div className="px-5 py-5 space-y-3">
-            {status === 'done' ? (
-              <div className="text-center py-6">
-                <p className="text-2xl mb-2">✓</p>
-                <p className="text-sm font-bold text-black">의견이 저장되었습니다</p>
-                <button onClick={() => setStatus('idle')} className="mt-4 text-xs text-black/40 underline underline-offset-2">
-                  다른 의견 보내기
-                </button>
-              </div>
-            ) : (
-              <>
-                <textarea
-                  value={content}
-                  onChange={e => setContent(e.target.value)}
-                  placeholder="불편한 점, 개선 아이디어, 데이터 오류 등 자유롭게 남겨주세요."
-                  rows={5}
-                  className="w-full text-sm text-black border border-black/10 px-4 py-3 resize-none focus:outline-none focus:border-black/40 transition-colors placeholder:text-black/20"
-                  style={{ borderRadius: 0 }}
-                />
-                {status === 'error' && (
-                  <p className="text-xs text-red-500">저장에 실패했습니다. 다시 시도해주세요.</p>
-                )}
+        {/* 목록 영역 */}
+        <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+          {feedbacks.length === 0 && (
+            <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.3)', textAlign: 'center', padding: '16px 0' }}>아직 의견이 없습니다</p>
+          )}
+          {feedbacks.map((f, i) => (
+            <div key={f.id} style={{ padding: '14px 24px', borderTop: '1px solid #ebebeb', transition: 'background 0.1s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#f9f9f9')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#fff')}
+            >
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#111', margin: '0 0 4px', letterSpacing: -0.2, whiteSpace: 'pre-wrap' }}>{f.content}</p>
+              <p style={{ fontSize: 11, color: 'rgba(17,17,17,0.35)', margin: 0 }}>{fmtKst(f.createdAt)}</p>
+            </div>
+          ))}
+          <div style={{ height: 16 }} />
+        </div>
+
+        {/* 작성 영역 */}
+        <div style={{ padding: '20px 24px', borderTop: '1px solid #ebebeb' }}>
+          {status === 'done' ? (
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#AA8E5C', textAlign: 'center', padding: '12px 0', margin: 0 }}>✓ 의견이 저장되었습니다</p>
+          ) : (
+            <>
+              <textarea
+                value={content}
+                onChange={e => setContent(e.target.value)}
+                placeholder="불편한 점, 개선 아이디어, 데이터 오류 등 자유롭게 남겨주세요."
+                rows={4}
+                style={{ width: '100%', fontSize: 13, color: '#111', border: '1px solid #ebebeb', borderRadius: 8, padding: '12px 14px', resize: 'none', outline: 'none', boxSizing: 'border-box', background: '#fafafa', fontFamily: 'inherit', transition: 'border-color 0.15s, background 0.15s' }}
+                onFocus={e => { e.target.style.borderColor = '#111'; e.target.style.background = '#fff'; }}
+                onBlur={e => { e.target.style.borderColor = '#ebebeb'; e.target.style.background = '#fafafa'; }}
+              />
+              {status === 'error' && <p style={{ fontSize: 12, color: '#c0392b', margin: '6px 0 0' }}>저장에 실패했습니다. 다시 시도해주세요.</p>}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
                 <button
                   onClick={handleSend}
                   disabled={!content.trim() || status === 'sending'}
-                  className="w-full py-2.5 text-sm font-bold text-white bg-[#111] transition-opacity disabled:opacity-40"
-                  style={{ borderRadius: 0 }}
+                  style={{ padding: '4px 0', background: 'none', border: 'none', color: !content.trim() || status === 'sending' ? 'rgba(17,17,17,0.3)' : '#111', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: !content.trim() || status === 'sending' ? 'default' : 'pointer' }}
                 >
                   {status === 'sending' ? '저장 중...' : '보내기'}
                 </button>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* 목록 탭 */}
-        {tab === 'list' && (
-          <div className="px-5 py-4 max-h-80 overflow-y-auto space-y-3">
-            {loadingList && <p className="text-xs text-black/30 text-center py-6">불러오는 중...</p>}
-            {!loadingList && feedbacks.length === 0 && (
-              <p className="text-xs text-black/30 text-center py-6">아직 의견이 없습니다</p>
-            )}
-            {feedbacks.map(f => (
-              <div key={f.id} className="border border-black/8 px-4 py-3 space-y-1" style={{ borderRadius: 0 }}>
-                <p className="text-sm text-black/80 whitespace-pre-wrap">{f.content}</p>
-                <p className="text-xs text-black/25">{fmtKst(f.createdAt)}</p>
               </div>
-            ))}
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -18,24 +18,15 @@ async function fetchFeed(query: string): Promise<NewsItem[]> {
   }
 }
 
-const KW_QUERIES: Record<string, string[]> = {
-  '거위털': ['goose down feather market price', 'goose down raw material supply'],
-  '오리털': ['duck down feather industry', 'duck down textile import export'],
-  '침구류': ['down bedding duvet comforter', 'down filling feather trade'],
-};
-const DEFAULT_QUERIES = [
-  'goose down feather market price',
-  'duck down feather industry',
-  'down bedding duvet comforter',
-  'goose down raw material supply',
-  'duck down textile import export',
-  'down filling feather trade',
-];
-
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const kw = searchParams.get('q');
-  const queries = kw && KW_QUERIES[kw] ? KW_QUERIES[kw] : DEFAULT_QUERIES;
+export async function GET() {
+  const queries = [
+    'goose down feather market price',
+    'duck down feather industry',
+    'down bedding duvet comforter',
+    'goose down raw material supply',
+    'duck down textile import export',
+    'down filling feather trade',
+  ];
 
   const results = await Promise.all(queries.map(fetchFeed));
   const all = results.flat();
