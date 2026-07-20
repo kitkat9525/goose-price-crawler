@@ -309,7 +309,6 @@ function NewsCol({ title, keywords, apiPath, sourceNote, last }: {
   const [news, setNews]       = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage]       = useState(0);
-  const [kw, setKw]           = useState(0);
 
   useEffect(() => {
     fetch(apiPath)
@@ -324,13 +323,11 @@ function NewsCol({ title, keywords, apiPath, sourceNote, last }: {
   return (
     <div style={{ padding: '32px 40px', borderRight: last ? 'none' : '1px solid #ebebeb' }}>
       <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'rgba(17,17,17,0.28)', marginBottom: 5, textTransform: 'uppercase' }}>NEWS</p>
-      <h2 style={{ fontSize: 24, fontWeight: 900, letterSpacing: -0.6, color: '#111' }}>{title}</h2>
-      <div style={{ display: 'flex', gap: 6, margin: '12px 0 18px' }}>
-        {keywords.map((k, i) => (
-          <button key={k} onClick={() => { setKw(i); setPage(0); }}
-            style={{ fontSize: 11, fontWeight: 700, padding: '5px 10px 5px 0', background: 'none', border: 'none',
-              borderBottom: kw === i ? '2px solid #111' : '2px solid transparent',
-              color: kw === i ? '#111' : 'rgba(17,17,17,0.32)', cursor: 'pointer', fontFamily: 'inherit' }}>
+      <h2 style={{ fontSize: 24, fontWeight: 900, letterSpacing: -0.6, color: '#111', marginBottom: 18 }}>{title}</h2>
+      <div style={{ display: 'none' }}>
+        {keywords.map((k) => (
+          <button key={k}
+            style={{}}>
             {k}
           </button>
         ))}

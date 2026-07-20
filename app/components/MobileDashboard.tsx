@@ -224,7 +224,6 @@ function MNewsCol({ title, keywords, apiPath, sourceNote }: {
   const [news, setNews]       = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage]       = useState(0);
-  const [kw, setKw]           = useState(0);
 
   useEffect(() => {
     fetch(apiPath).then(r => r.json()).then(d => { setNews(d.news ?? []); setLoading(false); }).catch(() => setLoading(false));
@@ -236,16 +235,6 @@ function MNewsCol({ title, keywords, apiPath, sourceNote }: {
   return (
     <div>
       <MSecHdr tag="NEWS" title={title} />
-      <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
-        {keywords.map((k, i) => (
-          <button key={k} onClick={() => { setKw(i); setPage(0); }}
-            style={{ fontSize: 11, fontWeight: 700, padding: '5px 10px 5px 0', background: 'none', border: 'none',
-              borderBottom: kw === i ? '2px solid #111' : '2px solid transparent',
-              color: kw === i ? '#111' : 'rgba(17,17,17,0.32)', cursor: 'pointer', fontFamily: 'inherit' }}>
-            {k}
-          </button>
-        ))}
-      </div>
       {loading && <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.3)', padding: '20px 0', textAlign: 'center' }}>불러오는 중...</p>}
       {!loading && paged.map((item, i) => (
         <div key={i} style={{ padding: '11px 0', borderBottom: '1px solid #f2f2f2' }}>
