@@ -10,6 +10,7 @@ import {
 import type { AggregatedData, FxRates, CategoryPrices, PriceEntry, CustomsMonthData } from '@/app/lib/aggregate';
 import type { NewsItem } from '@/app/lib/types';
 import { CUSTOMS_HS_NOTE } from '@/app/lib/sources/customs';
+import SlotNumber        from './SlotNumber';
 import { FeedbackModal } from './home/FeedbackModal';
 import { HelpModal }     from './home/HelpModal';
 import { NoticePopup }   from './home/NoticePopup';
@@ -116,7 +117,7 @@ function MagCard({ cat, cur, fx }: { cat: CategoryPrices; cur: Currency; fx: FxR
       {price != null ? (
         <>
           <p style={{ fontSize: 32, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1, color: '#111' }}>
-            {fmtPrice(price, cur)}<span style={{ fontSize: 12, color: 'rgba(17,17,17,0.3)', fontWeight: 400, marginLeft: 6 }}>/kg</span>
+            {CUR_SYM[cur]}<SlotNumber value={cur === 'KRW' ? Math.round(price) : price} decimals={cur === 'KRW' ? 0 : 2} /><span style={{ fontSize: 12, color: 'rgba(17,17,17,0.3)', fontWeight: 400, marginLeft: 6 }}>/kg</span>
           </p>
           {diff != null && (
             <span style={{ display: 'inline-block', fontSize: 10, fontWeight: 700, padding: '2px 8px', background: '#f0f0f0', marginTop: 6 }}>
@@ -153,7 +154,9 @@ function MHeroPanel({ tag, title, entry, currency, fx }: { tag: string; title: s
       <p style={{ fontSize: 14, fontWeight: 900, letterSpacing: -0.3, color: '#111', marginBottom: 6 }}>{title}</p>
       {price != null ? (
         <>
-          <p style={{ fontSize: 24, fontWeight: 900, letterSpacing: -1, lineHeight: 1, color: '#111' }}>{fmtPrice(price, currency)}</p>
+          <p style={{ fontSize: 24, fontWeight: 900, letterSpacing: -1, lineHeight: 1, color: '#111' }}>
+            {CUR_SYM[currency]}<SlotNumber value={currency === 'KRW' ? Math.round(price) : price} decimals={currency === 'KRW' ? 0 : 2} />
+          </p>
           <p style={{ fontSize: 9, color: 'rgba(17,17,17,0.3)', marginTop: 2 }}>90% 기준 /kg</p>
           {diff != null && <span style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, padding: '2px 7px', background: '#ebebeb', marginTop: 5, color: '#111' }}>{down ? '▼' : '▲'} {fmtPrice(diff, currency)}</span>}
         </>
@@ -708,7 +711,7 @@ export default function MobileDashboard({ data }: { data: AggregatedData }) {
       <div id="m-fx" style={SEC}>
         <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: 2, color: 'rgba(17,17,17,0.28)', marginBottom: 6, textTransform: 'uppercase' }}>EXCHANGE RATE · €1 EUR</p>
         <div style={{ fontSize: 52, fontWeight: 900, letterSpacing: -3, lineHeight: 1, color: '#111' }}>
-          ₩{fmtNum(eurKrw, 0)}
+          ₩<SlotNumber value={Math.round(eurKrw)} />
         </div>
         <p style={{ fontSize: 11, color: 'rgba(17,17,17,0.35)', marginTop: 6 }}>{lastUpdated ? `${lastUpdated} · open.er-api.com` : 'open.er-api.com'}</p>
         <div style={{ display: 'flex', gap: 4, marginTop: 12 }}>

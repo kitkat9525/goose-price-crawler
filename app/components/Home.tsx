@@ -10,6 +10,7 @@ import {
 import type { AggregatedData, FxRates, CategoryPrices, PriceEntry, CustomsMonthData } from '@/app/lib/aggregate';
 import type { NewsItem } from '@/app/lib/types';
 import { CUSTOMS_HS_NOTE } from '@/app/lib/sources/customs';
+import SlotNumber        from './SlotNumber';
 import { ClockBar }      from './home/ClockBar';
 import { FeedbackModal } from './home/FeedbackModal';
 import { HelpModal }     from './home/HelpModal';
@@ -105,7 +106,9 @@ function HeroPanel({ tag, title, entry, currency, fx, noBorder }: { tag: string;
       <div>
         {price != null ? (
           <>
-            <p style={{ fontSize: 40, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#111' }}>{fmtPrice(price, currency)}</p>
+            <p style={{ fontSize: 40, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#111' }}>
+              {CUR_SYM[currency]}<SlotNumber value={currency === 'KRW' ? Math.round(price) : price} decimals={currency === 'KRW' ? 0 : 2} />
+            </p>
             <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.3)', marginTop: 3 }}>90% 기준 /kg</p>
             {diff != null && <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 2, background: '#f0f0f0', marginTop: 6, color: '#111' }}>{down ? '▼' : '▲'} {fmtPrice(diff, currency)}</span>}
           </>
@@ -153,7 +156,7 @@ function MagCell({ cat, cur, fx, pos }: { cat: CategoryPrices; cur: Currency; fx
       {price != null ? (
         <>
           <p style={{ fontSize: 46, fontWeight: 900, letterSpacing: -2.5, lineHeight: 1, color: '#111' }}>
-            {fmtPrice(price, cur)}
+            {CUR_SYM[cur]}<SlotNumber value={cur === 'KRW' ? Math.round(price) : price} decimals={cur === 'KRW' ? 0 : 2} />
             <span style={{ fontSize: 14, color: 'rgba(17,17,17,0.3)', fontWeight: 400, marginLeft: 8, letterSpacing: 0 }}>/kg</span>
           </p>
           {diff != null && (
@@ -864,7 +867,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           <div>
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'rgba(17,17,17,0.28)', marginBottom: 10, textTransform: 'uppercase' }}>EXCHANGE RATE · €1 EUR</p>
             <div style={{ fontSize: 72, fontWeight: 900, letterSpacing: -4, lineHeight: 1, color: '#111' }}>
-              ₩{fmtNum(eurKrw, 0)}
+              ₩<SlotNumber value={Math.round(eurKrw)} />
             </div>
             <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.35)', marginTop: 8 }}>{lastUpdated ? `${lastUpdated} · open.er-api.com` : 'open.er-api.com'}</p>
             <div style={{ display: 'flex', gap: 6, marginTop: 14 }}>
