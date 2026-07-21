@@ -35,7 +35,7 @@ export default function SlotNumber({ value, decimals = 0 }: Props) {
       } else {
         const slot = document.createElement('span');
         slot.style.cssText =
-          'display:inline-block;overflow:hidden;height:1.15em;width:0.65em;vertical-align:bottom;position:relative;';
+          'display:inline-block;overflow:hidden;height:1.15em;width:0.68em;vertical-align:bottom;position:relative;';
         const cell = document.createElement('span');
         cell.style.cssText =
           'position:absolute;top:0;left:0;right:0;height:1.15em;line-height:1.15em;text-align:center;';
