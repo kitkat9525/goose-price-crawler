@@ -823,12 +823,9 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
       {showHelp     && <HelpModal    onClose={() => setShowHelp(false)} />}
       {showLab && (
         <div onClick={() => setShowLab(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: '90vw', maxWidth: 1400, height: '85vh', background: '#fff', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 80px rgba(0,0,0,0.35)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: '#f5f5f5', borderBottom: '1px solid #e0e0e0', flexShrink: 0 }}>
-              <button onClick={() => setShowLab(false)} style={{ width: 14, height: 14, borderRadius: '50%', background: '#ff5f57', border: 'none', cursor: 'pointer', flexShrink: 0 }} />
-              <div style={{ flex: 1, background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: '4px 10px', fontSize: 12, color: '#888' }}>/lab</div>
-            </div>
-            <iframe src="/lab" style={{ flex: 1, border: 'none', width: '100%' }} />
+          <div onClick={e => e.stopPropagation()} style={{ width: '90vw', maxWidth: 1400, height: '85vh', background: '#fff', borderRadius: 12, overflow: 'hidden', position: 'relative', boxShadow: '0 32px 80px rgba(0,0,0,0.35)' }}>
+            <button onClick={() => setShowLab(false)} style={{ position: 'absolute', top: 14, right: 16, zIndex: 1, background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, lineHeight: 1, color: 'rgba(17,17,17,0.4)' }}>✕</button>
+            <iframe src="/lab" style={{ width: '100%', height: '100%', border: 'none', display: 'block' }} />
           </div>
         </div>
       )}
