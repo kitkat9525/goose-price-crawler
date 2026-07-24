@@ -22,7 +22,7 @@ interface BjdongGroup {
   lat: number;
   lng: number;
   count: number;
-  items: BuildingPermitItem[] | null; // null = 미로드
+  items: BuildingPermitItem[] | null;
 }
 
 type NaverMaps = {
@@ -82,11 +82,34 @@ const TH: React.CSSProperties = {
 
 const TABLE_HEADERS = ['#', '건물명', '주소', '주용도', '건축구분', '허가일', '승인일'];
 
+const R = 28;
+const CIRC = 2 * Math.PI * R;
+
+function CircularProgress({ pct, spinning }: { pct?: number; spinning?: boolean }) {
+  return (
+    <svg width={72} height={72} style={spinning ? { animation: 'spin 1s linear infinite' } : {}}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <circle cx={36} cy={36} r={R} fill="none" stroke="#ebebeb" strokeWidth={3} />
+      <circle
+        cx={36} cy={36} r={R} fill="none"
+        stroke={KEY} strokeWidth={3}
+        strokeLinecap="round"
+        strokeDasharray={spinning ? `${CIRC * 0.25} ${CIRC * 0.75}` : `${CIRC * (pct ?? 0) / 100} ${CIRC}`}
+        transform="rotate(-90 36 36)"
+      />
+      {pct != null && !spinning && (
+        <text x={36} y={40} textAnchor="middle" fontSize={12} fontWeight={700} fill="#111">{pct}%</text>
+      )}
+    </svg>
+  );
+}
+
 export default function LabClient({ naverClientId }: LabClientProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<unknown>(null);
   const markersRef = useRef<unknown[]>([]);
   const listRef = useRef<HTMLDivElement>(null);
+  const isInitialLoad = useRef(true);
 
   const [groups, setGroups] = useState<BjdongGroup[]>([]);
   const [selected, setSelected] = useState<BjdongGroup | null>(null);
@@ -99,7 +122,6 @@ export default function LabClient({ naverClientId }: LabClientProps) {
 
   useEffect(() => { setExpandedIdx(null); }, [selected]);
 
-  // 동 상세 데이터 로드 (메모리 캐시 재사용)
   const loadGroup = useCallback(async (group: BjdongGroup) => {
     if (group.items !== null) {
       setSelected(group);
@@ -116,12 +138,15 @@ export default function LabClient({ naverClientId }: LabClientProps) {
       setGroups(prev => prev.map(g => g.bjdongKey === group.bjdongKey ? updated : g));
       setSelected(updated);
       listRef.current?.scrollTo({ top: 0 });
+      if (isInitialLoad.current) {
+        isInitialLoad.current = false;
+        setLoading(false);
+      }
     } finally {
       setLoadingDetail(false);
     }
   }, []);
 
-  // 초기 로드: summary fetch
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -146,18 +171,17 @@ export default function LabClient({ naverClientId }: LabClientProps) {
             };
           });
 
-        const contentType = summaryRes.headers.get('content-type') ?? '';
-
         const pickRandom = (gs: BjdongGroup[]) => {
           if (gs.length > 0) loadGroup(gs[Math.floor(Math.random() * gs.length)]);
         };
+
+        const contentType = summaryRes.headers.get('content-type') ?? '';
 
         if (contentType.includes('application/json')) {
           const { summary } = await summaryRes.json();
           if (cancelled) return;
           const gs = buildGroups(summary);
           setGroups(gs);
-          setLoading(false);
           pickRandom(gs);
         } else {
           const reader = summaryRes.body!.getReader();
@@ -179,7 +203,6 @@ export default function LabClient({ naverClientId }: LabClientProps) {
               } else if (event === 'done') {
                 const gs = buildGroups(data.summary);
                 setGroups(gs);
-                setLoading(false);
                 setProgress(null);
                 pickRandom(gs);
               } else if (event === 'error') {
@@ -199,7 +222,6 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     return () => { cancelled = true; };
   }, [loadGroup]);
 
-  // 지도 초기화
   const initMap = useCallback(() => {
     const naver = (window as unknown as { naver: NaverMaps }).naver;
     if (!naver || !mapContainerRef.current || mapRef.current) return;
@@ -218,7 +240,6 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     if (!loading) initMap();
   }, [loading, initMap]);
 
-  // 마커 렌더링
   useEffect(() => {
     const naver = (window as unknown as { naver?: NaverMaps }).naver;
     if (!naver || !mapRef.current || groups.length === 0) return;
@@ -314,18 +335,11 @@ export default function LabClient({ naverClientId }: LabClientProps) {
         </h1>
       </header>
 
-      {loading && (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-          {progress ? (
-            <>
-              <p style={{ fontSize: 12, fontWeight: 700, color: '#111' }}>{progress.sigunguName} · {progress.bjdongName}</p>
-              <div style={{ width: 240, background: '#ebebeb', borderRadius: 2, height: 2 }}>
-                <div style={{ background: KEY, height: 2, borderRadius: 2, width: `${pct}%`, transition: 'width 150ms' }} />
-              </div>
-              <p style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{progress.current} / {progress.total} ({pct}%)</p>
-            </>
-          ) : (
-            <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.4)' }}>데이터 로드 중…</p>
+      {loading && !error && (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+          <CircularProgress pct={progress ? pct : undefined} spinning={!progress} />
+          {progress && (
+            <p style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{progress.sigunguName} · {progress.bjdongName}</p>
           )}
         </div>
       )}
@@ -341,22 +355,20 @@ export default function LabClient({ naverClientId }: LabClientProps) {
           <div ref={mapContainerRef} style={{ width: '50%', borderRight: '1px solid #ebebeb', flexShrink: 0 }} />
 
           <div ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: '24px 32px' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
-              {selected ? (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-                    <button onClick={() => setSelected(null)} style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>← 전체</button>
-                    <h2 style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.3, color: '#111' }}>{selected.name}</h2>
-                  </div>
-                  <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{formatNum(selected.count)}건</span>
-                </>
-              ) : (
-                <h2 style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.3, color: '#111' }}>지도에서 동을 선택하세요</h2>
-              )}
-            </div>
+            {selected && (
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+                  <button onClick={() => setSelected(null)} style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>← 전체</button>
+                  <h2 style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.3, color: '#111' }}>{selected.name}</h2>
+                </div>
+                <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{formatNum(selected.count)}건</span>
+              </div>
+            )}
 
             {loadingDetail && (
-              <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.4)', paddingTop: 40, textAlign: 'center' }}>로드 중…</p>
+              <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 40 }}>
+                <CircularProgress spinning />
+              </div>
             )}
 
             {!loadingDetail && selected?.items && (
