@@ -4,9 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo, Fragment } from 'rea
 import Script from 'next/script';
 import { BuildingPermitItem } from '@/types/building';
 
-export interface LabClientProps {
-  naverClientId: string;
-}
+export interface LabClientProps { naverClientId: string }
 
 const KEY = '#AA8E5C';
 const SIGUNGU_ZOOM_THRESHOLD = 12;
@@ -24,13 +22,6 @@ interface BjdongGroup {
   lat: number;
   lng: number;
   items: BuildingPermitItem[];
-}
-
-interface ProgressState {
-  current: number;
-  total: number;
-  sigunguName: string;
-  bjdongName: string;
 }
 
 type NaverMaps = {
@@ -100,7 +91,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState<ProgressState | null>(null);
+  const [progress, setProgress] = useState<{ current: number; total: number; sigunguName: string; bjdongName: string } | null>(null);
   const [mapZoom, setMapZoom] = useState(10);
 
   useEffect(() => { setExpandedIdx(null); }, [selected]);
@@ -170,7 +161,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
 
   const initMap = useCallback(() => {
     const naver = (window as unknown as { naver: NaverMaps }).naver;
-    if (!naver || !mapContainerRef.current) return;
+    if (!naver || !mapContainerRef.current || mapRef.current) return;
     const map = new naver.maps.Map(mapContainerRef.current, {
       center: new naver.maps.LatLng(35.18, 129.07),
       zoom: 10,
@@ -182,9 +173,8 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     });
   }, []);
 
-  // 로딩 완료 후 지도 컨테이너가 DOM에 생기면 초기화
   useEffect(() => {
-    if (!loading && !mapRef.current) initMap();
+    if (!loading) initMap();
   }, [loading, initMap]);
 
   useEffect(() => {
@@ -215,15 +205,14 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     };
 
     if (mapZoom < SIGUNGU_ZOOM_THRESHOLD) {
-      const sigunguMap = new Map<string, { lat: number; lng: number; count: number; n: number }>();
+      const sg = new Map<string, { lat: number; lng: number; count: number; n: number }>();
       groups.forEach((g) => {
         const cd = g.bjdongKey.slice(0, 5);
-        const s = sigunguMap.get(cd) ?? { lat: 0, lng: 0, count: 0, n: 0 };
-        sigunguMap.set(cd, { lat: s.lat + g.lat, lng: s.lng + g.lng, count: s.count + g.items.length, n: s.n + 1 });
+        const s = sg.get(cd) ?? { lat: 0, lng: 0, count: 0, n: 0 };
+        sg.set(cd, { lat: s.lat + g.lat, lng: s.lng + g.lng, count: s.count + g.items.length, n: s.n + 1 });
       });
-      sigunguMap.forEach((s, cd) => {
-        const lat = s.lat / s.n;
-        const lng = s.lng / s.n;
+      sg.forEach((s, cd) => {
+        const lat = s.lat / s.n, lng = s.lng / s.n;
         addMarker(lat, lng, s.count, SIGUNGU_NAME[cd] ?? cd, () => {
           map.setZoom(SIGUNGU_ZOOM_THRESHOLD);
           map.setCenter(new naver.maps.LatLng(lat, lng));
@@ -245,11 +234,11 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     return [...all].sort(() => Math.random() - 0.5).slice(0, 1000);
   }, [groups]);
 
-  const renderRow = (item: BuildingPermitItem, idx: number, clickable = false, isOpen = false, onToggle?: () => void) => (
+  const renderRow = (item: BuildingPermitItem, idx: number, isOpen: boolean, onToggle: () => void) => (
     <Fragment key={idx}>
       <tr
-        onClick={clickable ? onToggle : undefined}
-        style={{ borderBottom: '1px solid #ebebeb', cursor: clickable ? 'pointer' : 'default', background: isOpen ? '#fafafa' : 'transparent' }}
+        onClick={onToggle}
+        style={{ borderBottom: '1px solid #ebebeb', cursor: 'pointer', background: isOpen ? '#fafafa' : 'transparent' }}
       >
         <td style={{ ...CELL, color: 'rgba(17,17,17,0.3)', width: 32 }}>{idx + 1}</td>
         <td style={{ ...CELL, fontWeight: 700, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.bldNm || '—'}</td>
@@ -276,6 +265,8 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     </Fragment>
   );
 
+  const listItems = selected ? selected.items : randomSample;
+
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#fff', color: '#111', fontFamily: 'inherit', overflow: 'hidden' }}>
       <Script
@@ -284,16 +275,16 @@ export default function LabClient({ naverClientId }: LabClientProps) {
         onLoad={initMap}
       />
 
-      <header style={{ borderBottom: '1px solid #ebebeb', padding: '16px 32px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexShrink: 0 }}>
-        <div>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'rgba(17,17,17,0.3)', textTransform: 'uppercase', marginBottom: 4 }}>LAB · 실험실</p>
-          <h1 style={{ fontSize: 20, fontWeight: 900, letterSpacing: -0.5, color: '#111' }}>구초 대동여지도</h1>
-        </div>
-        {!loading && !error && (
-          <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>
-            숙박시설 <strong style={{ color: '#111' }}>{formatNum(totalBuilding)}</strong>건
-          </span>
-        )}
+      <header style={{ borderBottom: '1px solid #ebebeb', padding: '16px 32px', flexShrink: 0 }}>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'rgba(17,17,17,0.3)', textTransform: 'uppercase', marginBottom: 4 }}>LAB · 실험실</p>
+        <h1 style={{ fontSize: 20, fontWeight: 900, letterSpacing: -0.5, color: '#111' }}>
+          구초 대동여지도
+          {!loading && !error && (
+            <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(17,17,17,0.4)', marginLeft: 10 }}>
+              숙박시설 <strong style={{ color: '#111', fontWeight: 700 }}>{formatNum(totalBuilding)}</strong>건
+            </span>
+          )}
+        </h1>
       </header>
 
       {loading && (
@@ -319,46 +310,45 @@ export default function LabClient({ naverClientId }: LabClientProps) {
       )}
 
       {!loading && !error && (
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <div ref={mapContainerRef} style={{ width: '50%', borderRight: '1px solid #ebebeb', flexShrink: 0, position: 'relative' }}>
-        </div>
+        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+          <div ref={mapContainerRef} style={{ width: '50%', borderRight: '1px solid #ebebeb', flexShrink: 0 }} />
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 32px' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
-            {selected ? (
-              <>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-                  <button onClick={() => setSelected(null)} style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>← 전체</button>
-                  <h2 style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.3, color: '#111' }}>{selected.name}</h2>
-                </div>
-                <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{formatNum(selected.items.length)}건</span>
-              </>
-            ) : (
-              <>
-                <h2 style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.3, color: '#111' }}>&nbsp;</h2>
-                <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{formatNum(randomSample.length)}건</span>
-              </>
-            )}
-          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '24px 32px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
+              {selected ? (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+                    <button onClick={() => setSelected(null)} style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>← 전체</button>
+                    <h2 style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.3, color: '#111' }}>{selected.name}</h2>
+                  </div>
+                  <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{formatNum(selected.items.length)}건</span>
+                </>
+              ) : (
+                <>
+                  <h2 style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.3, color: '#111' }}>&nbsp;</h2>
+                  <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{formatNum(listItems.length)}건</span>
+                </>
+              )}
+            </div>
 
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-              <thead>
-                <tr>
-                  {TABLE_HEADERS.map((h) => (
-                    <th key={h} style={{ ...TH, textAlign: h === '허가일' || h === '승인일' ? 'center' : 'left' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {(selected ? selected.items : randomSample).map((item, idx) =>
-                  renderRow(item, idx, true, expandedIdx === idx, () => setExpandedIdx(expandedIdx === idx ? null : idx))
-                )}
-              </tbody>
-            </table>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                <thead>
+                  <tr>
+                    {TABLE_HEADERS.map((h) => (
+                      <th key={h} style={{ ...TH, textAlign: h === '허가일' || h === '승인일' ? 'center' : 'left' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {listItems.map((item, idx) =>
+                    renderRow(item, idx, expandedIdx === idx, () => setExpandedIdx(expandedIdx === idx ? null : idx))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
       )}
     </div>
   );
