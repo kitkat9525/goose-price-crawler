@@ -822,8 +822,8 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
       {showHelp     && <HelpModal    onClose={() => setShowHelp(false)} />}
       {showLab && (
-        <div onClick={() => setShowLab(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: '90vw', maxWidth: 1400, height: '85vh', background: '#fff', borderRadius: 12, overflow: 'hidden', position: 'relative', boxShadow: '0 32px 80px rgba(0,0,0,0.35)' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '90vw', maxWidth: 1400, height: '85vh', background: '#fff', borderRadius: 12, overflow: 'hidden', position: 'relative', boxShadow: '0 32px 80px rgba(0,0,0,0.35)' }}>
             <button onClick={() => setShowLab(false)} style={{ position: 'absolute', top: 14, right: 16, zIndex: 1, background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, lineHeight: 1, color: 'rgba(17,17,17,0.4)' }}>✕</button>
             <iframe src="/lab" style={{ width: '100%', height: '100%', border: 'none', display: 'block' }} />
           </div>
