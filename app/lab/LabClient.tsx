@@ -85,6 +85,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<unknown>(null);
   const markersRef = useRef<unknown[]>([]);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const [groups, setGroups] = useState<BjdongGroup[]>([]);
   const [selected, setSelected] = useState<BjdongGroup | null>(null);
@@ -220,7 +221,10 @@ export default function LabClient({ naverClientId }: LabClientProps) {
       });
     } else {
       groups.forEach((g) => {
-        addMarker(g.lat, g.lng, g.items.length, g.name, () => setSelected(g));
+        addMarker(g.lat, g.lng, g.items.length, g.name, () => {
+          setSelected(g);
+          listRef.current?.scrollTo({ top: 0 });
+        });
       });
     }
   }, [groups, mapZoom]);
@@ -315,7 +319,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
         <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
           <div ref={mapContainerRef} style={{ width: '50%', borderRight: '1px solid #ebebeb', flexShrink: 0 }} />
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '24px 32px' }}>
+          <div ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: '24px 32px' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
               {selected ? (
                 <>
