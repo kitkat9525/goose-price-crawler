@@ -148,14 +148,18 @@ export default function LabClient({ naverClientId }: LabClientProps) {
 
         const contentType = summaryRes.headers.get('content-type') ?? '';
 
+        const pickRandom = (gs: BjdongGroup[]) => {
+          if (gs.length > 0) loadGroup(gs[Math.floor(Math.random() * gs.length)]);
+        };
+
         if (contentType.includes('application/json')) {
-          // 캐시 히트: 바로 summary JSON
           const { summary } = await summaryRes.json();
           if (cancelled) return;
-          setGroups(buildGroups(summary));
+          const gs = buildGroups(summary);
+          setGroups(gs);
           setLoading(false);
+          pickRandom(gs);
         } else {
-          // 캐시 미스: SSE 스트리밍
           const reader = summaryRes.body!.getReader();
           const decoder = new TextDecoder();
           let buf = '';
@@ -173,9 +177,11 @@ export default function LabClient({ naverClientId }: LabClientProps) {
               if (event === 'progress') {
                 setProgress(data);
               } else if (event === 'done') {
-                setGroups(buildGroups(data.summary));
+                const gs = buildGroups(data.summary);
+                setGroups(gs);
                 setLoading(false);
                 setProgress(null);
+                pickRandom(gs);
               } else if (event === 'error') {
                 setError(data.message);
                 setLoading(false);
@@ -191,7 +197,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [loadGroup]);
 
   // 지도 초기화
   const initMap = useCallback(() => {
