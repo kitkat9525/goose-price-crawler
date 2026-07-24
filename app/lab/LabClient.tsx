@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, Fragment } from 'react';
 import Script from 'next/script';
 import Lottie from 'lottie-react';
+import mapLottie from '@/public/map-lottie.json';
 import { BuildingPermitItem } from '@/types/building';
 
 export interface LabClientProps { naverClientId: string }
@@ -320,7 +321,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
 
       {loading && !error && (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-          <Lottie path="/map-lottie.json" loop style={{ width: 80, height: 80 }} />
+          <Lottie animationData={mapLottie} loop style={{ width: 80, height: 80 }} />
           {progress && (
             <p style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{progress.sigunguName} · {progress.bjdongName}</p>
           )}
