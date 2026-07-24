@@ -114,7 +114,7 @@ export async function getAllFeedbacks() {
   return result.rows as unknown as { id: number; content: string; createdAt: string }[];
 }
 
-// ── 부산 숙박시설 캐시 ────────────────────────────────────────────────────────
+// ── 부산 건축물 캐시 ─────────────────────────────────────────────────────────
 
 export async function getBuildingCacheAll(): Promise<{ bjdongKey: string; cachedAt: string; data: unknown[] }[]> {
   await initDb();
