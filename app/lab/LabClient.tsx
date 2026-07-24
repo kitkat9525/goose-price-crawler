@@ -230,8 +230,8 @@ export default function LabClient({ naverClientId }: LabClientProps) {
 
   const randomSample = useMemo(() => {
     const all = groups.flatMap((g) => g.items);
-    if (all.length <= 1000) return all;
-    return [...all].sort(() => Math.random() - 0.5).slice(0, 1000);
+    const sorted = [...all].sort((a, b) => (b.archPmsDay ?? '').localeCompare(a.archPmsDay ?? ''));
+    return sorted.length <= 1000 ? sorted : sorted.slice(0, 1000);
   }, [groups]);
 
   const renderRow = (item: BuildingPermitItem, idx: number, isOpen: boolean, onToggle: () => void) => (
@@ -265,7 +265,9 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     </Fragment>
   );
 
-  const listItems = selected ? selected.items : randomSample;
+  const listItems = selected
+    ? [...selected.items].sort((a, b) => (b.archPmsDay ?? '').localeCompare(a.archPmsDay ?? ''))
+    : randomSample;
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#fff', color: '#111', fontFamily: 'inherit', overflow: 'hidden' }}>
