@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     ? allBjdong
     : allBjdong.filter((b) => {
         const row = cachedMap.get(b.sigunguCd + b.bjdongCd);
-        return !row || row.cachedAt !== today;
+        return row != null && row.cachedAt !== today;
       });
 
   // 캐시 히트: summary만 바로 반환
