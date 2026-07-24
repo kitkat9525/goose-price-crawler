@@ -1,15 +1,4 @@
-// SQLite DB 클라이언트
-// - 로컬: file:./feedbacks.db (프로젝트 루트, 영구 저장)
-// - Vercel: 환경변수 TURSO_DATABASE_URL + TURSO_AUTH_TOKEN (turso.tech 무료 플랜)
-//
-// Turso 설정 방법:
-//   1. https://turso.tech 가입 (GitHub 로그인)
-//   2. turso db create goose-feedback
-//   3. turso db show goose-feedback → URL 복사
-//   4. turso db tokens create goose-feedback → Token 복사
-//   5. .env.local 에 TURSO_DATABASE_URL, TURSO_AUTH_TOKEN 추가
-//   6. Vercel 환경변수에도 동일하게 추가
-
+// 로컬: file:./feedbacks.db / Vercel: TURSO_DATABASE_URL + TURSO_AUTH_TOKEN
 import { createClient } from '@libsql/client';
 
 let _client: ReturnType<typeof createClient> | null = null;
@@ -58,6 +47,14 @@ async function initDb() {
       date         TEXT NOT NULL,
       subscribers  INTEGER NOT NULL,
       UNIQUE(channel_id, date)
+    )
+  `);
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS busan_lodging_cache (
+      bjdong_key TEXT PRIMARY KEY,
+      cached_at  TEXT NOT NULL,
+      data       TEXT NOT NULL
     )
   `);
 }
@@ -119,20 +116,8 @@ export async function getAllFeedbacks() {
 
 // ── 부산 숙박시설 캐시 ────────────────────────────────────────────────────────
 
-async function ensureLodgingTable() {
-  const db = getClient();
-  await db.execute(`
-    CREATE TABLE IF NOT EXISTS busan_lodging_cache (
-      bjdong_key TEXT PRIMARY KEY,
-      cached_at  TEXT NOT NULL,
-      data       TEXT NOT NULL
-    )
-  `);
-}
-
 export async function getLodgingCacheAll(): Promise<{ bjdongKey: string; cachedAt: string; data: unknown[] }[]> {
   await initDb();
-  await ensureLodgingTable();
   const db = getClient();
   const result = await db.execute(`SELECT bjdong_key, cached_at, data FROM busan_lodging_cache`);
   return result.rows.map((r) => ({
@@ -144,7 +129,6 @@ export async function getLodgingCacheAll(): Promise<{ bjdongKey: string; cachedA
 
 export async function setLodgingCacheRow(bjdongKey: string, cachedAt: string, data: unknown[]) {
   await initDb();
-  await ensureLodgingTable();
   const db = getClient();
   await db.execute({
     sql: `INSERT OR REPLACE INTO busan_lodging_cache (bjdong_key, cached_at, data) VALUES (?, ?, ?)`,

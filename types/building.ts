@@ -1,10 +1,7 @@
-/**
- * 건축HUB 건축인허가정보 서비스 - 기본개요 조회 (getApBasisOulnInfo)
- * 서비스 URL: https://apis.data.go.kr/1613000/ArchPmsHubService/getApBasisOulnInfo
- */
+// 건축HUB 건축인허가정보 서비스 타입 (getApBasisOulnInfo)
 
 // ─────────────────────────────────────────
-// 요청 파라미터 타입
+// 요청 파라미터
 // ─────────────────────────────────────────
 export interface BuildingPermitRequest {
   serviceKey: string;      // 공공데이터포털에서 발급받은 인증키 (필수)
@@ -20,7 +17,7 @@ export interface BuildingPermitRequest {
 }
 
 // ─────────────────────────────────────────
-// 응답 item 타입 (건축물 1건)
+// 응답 item (건축물 1건)
 // ─────────────────────────────────────────
 export interface BuildingPermitItem {
   rnum: number;                // 순번
@@ -97,14 +94,3 @@ export interface BuildingPermitResponse {
   };
 }
 
-// ─────────────────────────────────────────
-// API Route 응답 타입 (내부 사용)
-// ─────────────────────────────────────────
-export interface ApiResult {
-  success: boolean;          // 요청 성공 여부
-  data?: BuildingPermitItem[]; // 건축물 목록
-  totalCount?: number;       // 전체 데이터 수
-  pageNo?: number;           // 현재 페이지
-  numOfRows?: number;        // 페이지당 목록 수
-  error?: string;            // 에러 메시지
-}

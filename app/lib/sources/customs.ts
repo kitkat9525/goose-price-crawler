@@ -1,10 +1,5 @@
-// 관세청_품목별 수출입실적(GW) API (data.go.kr)
-// End Point: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList
-// HS 품목코드: 0505100000 — 충전용 깃털·솜털
-// ※ 거위털과 오리털이 하나의 코드로 합산 집계됨 (종별 분리 불가)
-//
-// API 키 발급: https://www.data.go.kr/data/15101609/openapi.do
-// .env.local 에 OPEN_API_KEY=일반인증키(Decoding) 형식으로 입력
+// 관세청 수출입실적 API — HS 0505100000 (충전용 깃털·솜털, 거위+오리 합산)
+// OPEN_API_KEY 환경변수 필요
 
 export const CUSTOMS_HS_CODE = '0505100000';
 export const CUSTOMS_HS_NOTE =
