@@ -66,9 +66,9 @@ export async function GET(request: NextRequest) {
         return;
       }
 
-      const serviceKey = process.env.BUILDING_API_KEY ?? '';
+      const serviceKey = process.env.OPEN_API_KEY ?? '';
       if (!serviceKey) {
-        controller.enqueue(sse('error', { message: 'BUILDING_API_KEY가 설정되지 않았습니다.' }));
+        controller.enqueue(sse('error', { message: 'OPEN_API_KEY가 설정되지 않았습니다.' }));
         controller.close();
         return;
       }

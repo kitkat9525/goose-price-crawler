@@ -70,7 +70,7 @@ function parseXml(xml: string): CustomsMonthData[] {
 }
 
 export async function fetchCustomsData(): Promise<CustomsData | null> {
-  const apiKey = process.env.CUSTOMS_API_KEY;
+  const apiKey = process.env.OPEN_API_KEY;
   if (!apiKey) return null;
 
   const now = new Date();
