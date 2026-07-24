@@ -309,7 +309,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
       <header style={{ borderBottom: '1px solid #ebebeb', padding: '16px 32px', flexShrink: 0 }}>
         <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'rgba(17,17,17,0.3)', textTransform: 'uppercase', marginBottom: 4 }}>LAB · 실험실</p>
         <h1 style={{ fontSize: 20, fontWeight: 900, letterSpacing: -0.5, color: '#111' }}>
-          구초 대동여지도
+          구초어때?
           {!loading && !error && (
             <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(17,17,17,0.4)', marginLeft: 10 }}>
               숙박시설 <strong style={{ color: '#111', fontWeight: 700 }}>{formatNum(totalBuilding)}</strong>건
