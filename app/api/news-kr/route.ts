@@ -4,11 +4,6 @@ import { parseRss } from '@/app/lib/utils/rss';
 
 export const revalidate = 1800;
 
-// ──────────────────────────────────────────────
-// 네이버 뉴스 검색 API
-// 환경변수: NAVER_CLIENT_ID, NAVER_CLIENT_SECRET
-// developers.naver.com 에서 발급
-// ──────────────────────────────────────────────
 function stripHtml(s: string) {
   return s
     .replace(/<[^>]+>/g, '')
@@ -159,9 +154,6 @@ async function fetchNaver(query: string, clientId: string, clientSecret: string)
   }
 }
 
-// ──────────────────────────────────────────────
-// 폴백: Google News RSS (키 없을 때)
-// ──────────────────────────────────────────────
 async function fetchGoogleRss(query: string): Promise<NewsItem[]> {
   const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query + ' when:1y')}&hl=ko&gl=KR&ceid=KR:ko`;
   try {
@@ -176,9 +168,6 @@ async function fetchGoogleRss(query: string): Promise<NewsItem[]> {
   }
 }
 
-// ──────────────────────────────────────────────
-// GET
-// ──────────────────────────────────────────────
 export async function GET() {
   const clientId     = process.env.NAVER_CLIENT_ID;
   const clientSecret = process.env.NAVER_CLIENT_SECRET;

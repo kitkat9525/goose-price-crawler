@@ -14,7 +14,6 @@ export interface AggregatedData {
 }
 
 export async function aggregate(): Promise<AggregatedData> {
-  // 세 소스를 병렬로 조회 — 하나 실패해도 나머지는 표시
   const [cfd, fx, customs] = await Promise.all([
     fetchPrices(),
     fetchFxRates(),

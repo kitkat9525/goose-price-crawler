@@ -1,5 +1,4 @@
-// 환율 소스: open.er-api.com (무료, 인증 불필요, 매 시간 업데이트)
-// 기준: 1 CNY = ? (각 통화)
+// 환율: open.er-api.com 기준 (1 CNY → 각 통화)
 
 export interface FxRates {
   fetchedAt: string;
@@ -11,7 +10,7 @@ export interface FxRates {
   EUR: number;
 }
 
-// 폴백: 수동 확인 기준값 (실시간 조회 실패 시)
+// 폴백값 (실시간 조회 실패 시)
 const FALLBACK: FxRates = {
   fetchedAt: '',
   lastUpdatedUtc: '',
