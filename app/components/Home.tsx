@@ -868,10 +868,12 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           }}>
             플레이보드 바로가기 ↗
           </a>
+          <span style={{ width: 1, height: 12, background: '#ddd', margin: '0 4px', flexShrink: 0 }} />
           <button onClick={() => setShowLab(true)} style={{
             fontSize: 13, fontWeight: 700, padding: '11px 14px',
+            background: 'none', border: 'none',
             borderBottom: '2px solid transparent', marginBottom: -1,
-            whiteSpace: 'nowrap', color: '#111', background: 'none', border: 'none', cursor: 'pointer',
+            cursor: 'pointer', whiteSpace: 'nowrap', color: '#111', fontFamily: 'inherit',
           }}>
             실험실 ↗
           </button>

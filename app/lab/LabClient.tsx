@@ -347,7 +347,9 @@ export default function LabClient({ naverClientId }: LabClientProps) {
                   ? selected.items.map((item, idx) =>
                       renderRow(item, idx, true, expandedIdx === idx, () => setExpandedIdx(expandedIdx === idx ? null : idx))
                     )
-                  : randomSample.map((item, idx) => renderRow(item, idx))
+                  : randomSample.map((item, idx) =>
+                      renderRow(item, idx, true, expandedIdx === idx, () => setExpandedIdx(expandedIdx === idx ? null : idx))
+                    )
                 }
               </tbody>
             </table>
