@@ -182,6 +182,11 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     });
   }, []);
 
+  // 로딩 완료 후 지도 컨테이너가 DOM에 생기면 초기화
+  useEffect(() => {
+    if (!loading && !mapRef.current) initMap();
+  }, [loading, initMap]);
+
   useEffect(() => {
     const naver = (window as unknown as { naver?: NaverMaps }).naver;
     if (!naver || !mapRef.current || groups.length === 0) return;
@@ -291,28 +296,31 @@ export default function LabClient({ naverClientId }: LabClientProps) {
         )}
       </header>
 
+      {loading && (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          {progress ? (
+            <>
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#111' }}>{progress.sigunguName} · {progress.bjdongName}</p>
+              <div style={{ width: 240, background: '#ebebeb', borderRadius: 2, height: 2 }}>
+                <div style={{ background: KEY, height: 2, borderRadius: 2, width: `${pct}%`, transition: 'width 150ms' }} />
+              </div>
+              <p style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{progress.current} / {progress.total} ({pct}%)</p>
+            </>
+          ) : (
+            <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.4)' }}>데이터 로드 중…</p>
+          )}
+        </div>
+      )}
+
+      {error && (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <p style={{ fontSize: 12, color: '#c0392b' }}>{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && (
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <div ref={mapContainerRef} style={{ width: '50%', borderRight: '1px solid #ebebeb', flexShrink: 0, position: 'relative' }}>
-          {loading && (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.92)', zIndex: 10, gap: 12, padding: '0 40px' }}>
-              {progress ? (
-                <>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: '#111' }}>{progress.sigunguName} · {progress.bjdongName}</p>
-                  <div style={{ width: '100%', maxWidth: 240, background: '#ebebeb', borderRadius: 2, height: 2 }}>
-                    <div style={{ background: KEY, height: 2, borderRadius: 2, width: `${pct}%`, transition: 'width 150ms' }} />
-                  </div>
-                  <p style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{progress.current} / {progress.total} ({pct}%)</p>
-                </>
-              ) : (
-                <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.4)' }}>데이터 로드 중…</p>
-              )}
-            </div>
-          )}
-          {error && (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-              <p style={{ fontSize: 12, color: '#c0392b' }}>{error}</p>
-            </div>
-          )}
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px 32px' }}>
@@ -351,6 +359,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }
