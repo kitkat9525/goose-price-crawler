@@ -127,6 +127,29 @@ export async function getBuildingCacheAll(): Promise<{ bjdongKey: string; cached
   }));
 }
 
+export async function getBuildingSummary(): Promise<{ bjdongKey: string; count: number }[]> {
+  await initDb();
+  const db = getClient();
+  const result = await db.execute(
+    `SELECT bjdong_key, json_array_length(data) as count FROM building_cache`
+  );
+  return result.rows.map((r) => ({
+    bjdongKey: r.bjdong_key as string,
+    count: Number(r.count),
+  }));
+}
+
+export async function getBuildingByBjdong(bjdongKey: string): Promise<unknown[]> {
+  await initDb();
+  const db = getClient();
+  const result = await db.execute({
+    sql: `SELECT data FROM building_cache WHERE bjdong_key = ?`,
+    args: [bjdongKey],
+  });
+  if (result.rows.length === 0) return [];
+  return JSON.parse(result.rows[0].data as string);
+}
+
 export async function setBuildingCacheRow(bjdongKey: string, cachedAt: string, data: unknown[]) {
   await initDb();
   const db = getClient();

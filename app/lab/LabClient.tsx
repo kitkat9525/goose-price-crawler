@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo, Fragment } from 'react';
+import { useState, useEffect, useRef, useCallback, Fragment } from 'react';
 import Script from 'next/script';
 import { BuildingPermitItem } from '@/types/building';
 
@@ -21,7 +21,8 @@ interface BjdongGroup {
   name: string;
   lat: number;
   lng: number;
-  items: BuildingPermitItem[];
+  count: number;
+  items: BuildingPermitItem[] | null; // null = 미로드
 }
 
 type NaverMaps = {
@@ -91,62 +92,94 @@ export default function LabClient({ naverClientId }: LabClientProps) {
   const [selected, setSelected] = useState<BjdongGroup | null>(null);
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingDetail, setLoadingDetail] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<{ current: number; total: number; sigunguName: string; bjdongName: string } | null>(null);
   const [mapZoom, setMapZoom] = useState(10);
 
   useEffect(() => { setExpandedIdx(null); }, [selected]);
 
+  // 동 상세 데이터 로드 (메모리 캐시 재사용)
+  const loadGroup = useCallback(async (group: BjdongGroup) => {
+    if (group.items !== null) {
+      setSelected(group);
+      listRef.current?.scrollTo({ top: 0 });
+      return;
+    }
+    setLoadingDetail(true);
+    try {
+      const res = await fetch(`/api/building/${group.bjdongKey}`);
+      const { data } = await res.json();
+      const sorted = (data as BuildingPermitItem[])
+        .sort((a, b) => (b.archPmsDay ?? '').localeCompare(a.archPmsDay ?? ''));
+      const updated = { ...group, items: sorted };
+      setGroups(prev => prev.map(g => g.bjdongKey === group.bjdongKey ? updated : g));
+      setSelected(updated);
+      listRef.current?.scrollTo({ top: 0 });
+    } finally {
+      setLoadingDetail(false);
+    }
+  }, []);
+
+  // 초기 로드: summary fetch
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const coordsRes = await fetch('/busan-bjdong-coords.json').catch(() => null);
+        const [coordsRes, summaryRes] = await Promise.all([
+          fetch('/busan-bjdong-coords.json').catch(() => null),
+          fetch('/api/building'),
+        ]);
         const coords: Record<string, { lat: number; lng: number; name: string }> =
           coordsRes ? await coordsRes.json() : {};
 
-        const res = await fetch('/api/building');
-        const reader = res.body!.getReader();
-        const decoder = new TextDecoder();
-        let buf = '';
+        const buildGroups = (summary: { bjdongKey: string; count: number }[]) =>
+          summary.map((s) => {
+            const coord = coords[s.bjdongKey];
+            return {
+              bjdongKey: s.bjdongKey,
+              name: coord?.name ?? s.bjdongKey,
+              lat: coord?.lat ?? 35.18,
+              lng: coord?.lng ?? 129.07,
+              count: s.count,
+              items: null,
+            };
+          });
 
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done || cancelled) break;
-          buf += decoder.decode(value, { stream: true });
-          const blocks = buf.split('\n\n');
-          buf = blocks.pop() ?? '';
+        const contentType = summaryRes.headers.get('content-type') ?? '';
 
-          for (const block of blocks) {
-            const event = block.match(/^event: (\w+)/m)?.[1];
-            const raw = block.match(/^data: (.+)/m)?.[1];
-            if (!event || !raw) continue;
-            const data = JSON.parse(raw);
-
-            if (event === 'progress') {
-              setProgress(data);
-            } else if (event === 'done') {
-              const map = new Map<string, BjdongGroup>();
-              for (const item of (data.data ?? []) as BuildingPermitItem[]) {
-                const key = item.sigunguCd + item.bjdongCd;
-                if (!map.has(key)) {
-                  const coord = coords[key];
-                  map.set(key, {
-                    bjdongKey: key,
-                    name: coord?.name ?? item.bjdongCd,
-                    lat: coord?.lat ?? 35.18,
-                    lng: coord?.lng ?? 129.07,
-                    items: [],
-                  });
-                }
-                map.get(key)!.items.push(item);
+        if (contentType.includes('application/json')) {
+          // 캐시 히트: 바로 summary JSON
+          const { summary } = await summaryRes.json();
+          if (cancelled) return;
+          setGroups(buildGroups(summary));
+          setLoading(false);
+        } else {
+          // 캐시 미스: SSE 스트리밍
+          const reader = summaryRes.body!.getReader();
+          const decoder = new TextDecoder();
+          let buf = '';
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done || cancelled) break;
+            buf += decoder.decode(value, { stream: true });
+            const blocks = buf.split('\n\n');
+            buf = blocks.pop() ?? '';
+            for (const block of blocks) {
+              const event = block.match(/^event: (\w+)/m)?.[1];
+              const raw = block.match(/^data: (.+)/m)?.[1];
+              if (!event || !raw) continue;
+              const data = JSON.parse(raw);
+              if (event === 'progress') {
+                setProgress(data);
+              } else if (event === 'done') {
+                setGroups(buildGroups(data.summary));
+                setLoading(false);
+                setProgress(null);
+              } else if (event === 'error') {
+                setError(data.message);
+                setLoading(false);
               }
-              setGroups(Array.from(map.values()));
-              setLoading(false);
-              setProgress(null);
-            } else if (event === 'error') {
-              setError(data.message);
-              setLoading(false);
             }
           }
         }
@@ -160,6 +193,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     return () => { cancelled = true; };
   }, []);
 
+  // 지도 초기화
   const initMap = useCallback(() => {
     const naver = (window as unknown as { naver: NaverMaps }).naver;
     if (!naver || !mapContainerRef.current || mapRef.current) return;
@@ -178,6 +212,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     if (!loading) initMap();
   }, [loading, initMap]);
 
+  // 마커 렌더링
   useEffect(() => {
     const naver = (window as unknown as { naver?: NaverMaps }).naver;
     if (!naver || !mapRef.current || groups.length === 0) return;
@@ -210,7 +245,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
       groups.forEach((g) => {
         const cd = g.bjdongKey.slice(0, 5);
         const s = sg.get(cd) ?? { lat: 0, lng: 0, count: 0, n: 0 };
-        sg.set(cd, { lat: s.lat + g.lat, lng: s.lng + g.lng, count: s.count + g.items.length, n: s.n + 1 });
+        sg.set(cd, { lat: s.lat + g.lat, lng: s.lng + g.lng, count: s.count + g.count, n: s.n + 1 });
       });
       sg.forEach((s, cd) => {
         const lat = s.lat / s.n, lng = s.lng / s.n;
@@ -221,29 +256,17 @@ export default function LabClient({ naverClientId }: LabClientProps) {
       });
     } else {
       groups.forEach((g) => {
-        addMarker(g.lat, g.lng, g.items.length, g.name, () => {
-          setSelected(g);
-          listRef.current?.scrollTo({ top: 0 });
-        });
+        addMarker(g.lat, g.lng, g.count, g.name, () => loadGroup(g));
       });
     }
-  }, [groups, mapZoom]);
+  }, [groups, mapZoom, loadGroup]);
 
-  const totalBuilding = groups.reduce((s, g) => s + g.items.length, 0);
+  const totalBuilding = groups.reduce((s, g) => s + g.count, 0);
   const pct = progress ? Math.round((progress.current / progress.total) * 100) : 0;
-
-  const randomSample = useMemo(() => {
-    const all = groups.flatMap((g) => g.items);
-    const sorted = [...all].sort((a, b) => (b.archPmsDay ?? '').localeCompare(a.archPmsDay ?? ''));
-    return sorted.length <= 1000 ? sorted : sorted.slice(0, 1000);
-  }, [groups]);
 
   const renderRow = (item: BuildingPermitItem, idx: number, isOpen: boolean, onToggle: () => void) => (
     <Fragment key={idx}>
-      <tr
-        onClick={onToggle}
-        style={{ borderBottom: '1px solid #ebebeb', cursor: 'pointer', background: isOpen ? '#fafafa' : 'transparent' }}
-      >
+      <tr onClick={onToggle} style={{ borderBottom: '1px solid #ebebeb', cursor: 'pointer', background: isOpen ? '#fafafa' : 'transparent' }}>
         <td style={{ ...CELL, color: 'rgba(17,17,17,0.3)', width: 32 }}>{idx + 1}</td>
         <td style={{ ...CELL, fontWeight: 700, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.bldNm || '—'}</td>
         <td style={{ ...CELL, color: 'rgba(17,17,17,0.55)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.platPlc || '—'}</td>
@@ -269,17 +292,9 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     </Fragment>
   );
 
-  const listItems = selected
-    ? [...selected.items].sort((a, b) => (b.archPmsDay ?? '').localeCompare(a.archPmsDay ?? ''))
-    : randomSample;
-
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#fff', color: '#111', fontFamily: 'inherit', overflow: 'hidden' }}>
-      <Script
-        src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`}
-        strategy="afterInteractive"
-        onLoad={initMap}
-      />
+      <Script src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`} strategy="afterInteractive" onLoad={initMap} />
 
       <header style={{ borderBottom: '1px solid #ebebeb', padding: '16px 32px', flexShrink: 0 }}>
         <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'rgba(17,17,17,0.3)', textTransform: 'uppercase', marginBottom: 4 }}>LAB · 실험실</p>
@@ -327,32 +342,35 @@ export default function LabClient({ naverClientId }: LabClientProps) {
                     <button onClick={() => setSelected(null)} style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>← 전체</button>
                     <h2 style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.3, color: '#111' }}>{selected.name}</h2>
                   </div>
-                  <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{formatNum(selected.items.length)}건</span>
+                  <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{formatNum(selected.count)}건</span>
                 </>
               ) : (
-                <>
-                  <h2 style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.3, color: '#111' }}>&nbsp;</h2>
-                  <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{formatNum(listItems.length)}건</span>
-                </>
+                <h2 style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.3, color: '#111' }}>지도에서 동을 선택하세요</h2>
               )}
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                <thead>
-                  <tr>
-                    {TABLE_HEADERS.map((h) => (
-                      <th key={h} style={{ ...TH, textAlign: h === '허가일' || h === '승인일' ? 'center' : 'left' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {listItems.map((item, idx) =>
-                    renderRow(item, idx, expandedIdx === idx, () => setExpandedIdx(expandedIdx === idx ? null : idx))
-                  )}
-                </tbody>
-              </table>
-            </div>
+            {loadingDetail && (
+              <p style={{ fontSize: 12, color: 'rgba(17,17,17,0.4)', paddingTop: 40, textAlign: 'center' }}>로드 중…</p>
+            )}
+
+            {!loadingDetail && selected?.items && (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                  <thead>
+                    <tr>
+                      {TABLE_HEADERS.map((h) => (
+                        <th key={h} style={{ ...TH, textAlign: h === '허가일' || h === '승인일' ? 'center' : 'left' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selected.items.map((item, idx) =>
+                      renderRow(item, idx, expandedIdx === idx, () => setExpandedIdx(expandedIdx === idx ? null : idx))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
