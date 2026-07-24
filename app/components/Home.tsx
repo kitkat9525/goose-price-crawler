@@ -756,6 +756,7 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
   });
   const [showFeedback, setShowFeedback] = useState(false);
   const [showHelp, setShowHelp]         = useState(false);
+  const [showLab, setShowLab]           = useState(false);
   const [active, setActive]             = useState('sec-fx');
   const [cfdStd, setCfdStd]             = useState('服标');
   const [cfdData, setCfdData]           = useState(data.cfd);
@@ -820,6 +821,17 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
       <NoticePopup />
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
       {showHelp     && <HelpModal    onClose={() => setShowHelp(false)} />}
+      {showLab && (
+        <div onClick={() => setShowLab(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '90vw', maxWidth: 1400, height: '85vh', background: '#fff', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 80px rgba(0,0,0,0.35)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: '#f5f5f5', borderBottom: '1px solid #e0e0e0', flexShrink: 0 }}>
+              <button onClick={() => setShowLab(false)} style={{ width: 14, height: 14, borderRadius: '50%', background: '#ff5f57', border: 'none', cursor: 'pointer', flexShrink: 0 }} />
+              <div style={{ flex: 1, background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: '4px 10px', fontSize: 12, color: '#888' }}>/lab</div>
+            </div>
+            <iframe src="/lab" style={{ flex: 1, border: 'none', width: '100%' }} />
+          </div>
+        </div>
+      )}
 
       <header style={{ position: 'sticky', top: 0, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(8px)', zIndex: 10, borderBottom: '1px solid #ebebeb' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 32px' }}>
@@ -859,6 +871,13 @@ export default function Dashboard({ data }: { data: AggregatedData }) {
           }}>
             플레이보드 바로가기 ↗
           </a>
+          <button onClick={() => setShowLab(true)} style={{
+            fontSize: 13, fontWeight: 700, padding: '11px 14px',
+            borderBottom: '2px solid transparent', marginBottom: -1,
+            whiteSpace: 'nowrap', color: '#111', background: 'none', border: 'none', cursor: 'pointer',
+          }}>
+            실험실 ↗
+          </button>
         </div>
       </header>
 
