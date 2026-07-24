@@ -86,7 +86,6 @@ const TABLE_HEADERS = ['#', '건물명', '주소', '주용도', '건축구분', 
 
 interface Progress { current: number; total: number; sigunguName: string; bjdongName: string }
 
-const SPIN_STYLE = `@keyframes spin { to { transform: rotate(360deg); } }`;
 
 export default function LabClient({ naverClientId }: LabClientProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -304,7 +303,6 @@ export default function LabClient({ naverClientId }: LabClientProps) {
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#fff', color: '#111', fontFamily: 'inherit', overflow: 'hidden' }}>
-      <style>{SPIN_STYLE}</style>
       <Script src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`} strategy="afterInteractive" onLoad={initMap} />
 
       <header style={{ borderBottom: '1px solid #ebebeb', padding: '16px 32px', flexShrink: 0 }}>
@@ -351,7 +349,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
 
             {loadingDetail && (
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: 20, height: 20, border: '2px solid #ebebeb', borderTopColor: KEY, borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                <Lottie animationData={mapLottie} loop style={{ width: 60, height: 60 }} />
               </div>
             )}
 
