@@ -90,7 +90,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressEvent | null>(null);
-  const [mapZoom, setMapZoom] = useState(13);
+  const [mapZoom, setMapZoom] = useState(10);
 
   useEffect(() => { setExpandedIdx(null); }, [selected]);
 
@@ -163,8 +163,8 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     const naver = (window as unknown as { naver: { maps: { Map: new (...a: unknown[]) => unknown; LatLng: new (...a: unknown[]) => unknown; Marker: new (...a: unknown[]) => unknown; Point: new (...a: unknown[]) => unknown; Event: { addListener: (...a: unknown[]) => unknown } } } }).naver;
     if (!naver || !mapContainerRef.current) return;
     const map = new naver.maps.Map(mapContainerRef.current, {
-      center: new naver.maps.LatLng(35.14, 129.05),
-      zoom: 13,
+      center: new naver.maps.LatLng(35.18, 129.07),
+      zoom: 10,
       minZoom: 9,
     });
     mapRef.current = map;
@@ -184,15 +184,17 @@ export default function LabClient({ naverClientId }: LabClientProps) {
 
     const addMarker = (lat: number, lng: number, count: number, label: string, onClick: () => void) => {
       const digits = String(count).length;
-      const base = mapZoom >= SIGUNGU_ZOOM_THRESHOLD ? 40 : 52;
-      const size = base + (digits - 1) * 8;
+      // 줌 단계별 베이스 크기: 낮은 줌(전체보기)일수록 작게, 줌인할수록 커짐
+      const base = mapZoom >= 14 ? 32 : mapZoom >= 12 ? 28 : mapZoom >= 11 ? 34 : 28;
+      const increment = mapZoom < 12 ? 5 : 4;
+      const size = base + (digits - 1) * increment;
       const fs = Math.round(size * 0.33);
       const marker = new naver.maps.Marker({
         position: new naver.maps.LatLng(lat, lng),
         map: mapRef.current,
         title: label,
         icon: {
-          content: `<div style="background:#111;color:#fff;border-radius:50%;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;font-size:${fs}px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.25)">${count}</div>`,
+          content: `<div style="background:${KEY};color:#fff;border-radius:50%;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;font-size:${fs}px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.2)">${count}</div>`,
           anchor: new naver.maps.Point(size / 2, size / 2),
         },
       });
