@@ -321,7 +321,7 @@ export default function LabPage() {
               </>
             ) : (
               <>
-                <h2 style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.3, color: '#111' }}>무작위 샘플</h2>
+                <h2 style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.3, color: '#111' }}>&nbsp;</h2>
                 <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{formatNum(randomSample.length)}건</span>
               </>
             )}
