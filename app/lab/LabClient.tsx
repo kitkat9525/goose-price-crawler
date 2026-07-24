@@ -45,6 +45,7 @@ const formatNum = (n: number | string) =>
 
 function getItemFields(item: BuildingPermitItem): [string, string][] {
   return [
+    ['건물명', item.bldNm],
     ['대지위치', item.platPlc],
     ['건축구분', item.archGbCdNm],
     ['주용도', item.mainPurpsCdNm],
