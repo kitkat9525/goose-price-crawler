@@ -142,21 +142,6 @@ export async function getLodgingCacheAll(): Promise<{ bjdongKey: string; cachedA
   }));
 }
 
-export async function getLodgingCacheByKey(bjdongKey: string): Promise<{ cachedAt: string; data: unknown[] } | null> {
-  await initDb();
-  await ensureLodgingTable();
-  const db = getClient();
-  const result = await db.execute({
-    sql: `SELECT cached_at, data FROM busan_lodging_cache WHERE bjdong_key = ?`,
-    args: [bjdongKey],
-  });
-  if (result.rows.length === 0) return null;
-  return {
-    cachedAt: result.rows[0].cached_at as string,
-    data: JSON.parse(result.rows[0].data as string),
-  };
-}
-
 export async function setLodgingCacheRow(bjdongKey: string, cachedAt: string, data: unknown[]) {
   await initDb();
   await ensureLodgingTable();

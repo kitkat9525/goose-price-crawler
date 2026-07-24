@@ -4,7 +4,7 @@
 // ※ 거위털과 오리털이 하나의 코드로 합산 집계됨 (종별 분리 불가)
 //
 // API 키 발급: https://www.data.go.kr/data/15101609/openapi.do
-// .env.local 에 CUSTOMS_API_KEY=일반인증키(Decoding) 형식으로 입력
+// .env.local 에 OPEN_API_KEY=일반인증키(Decoding) 형식으로 입력
 
 export const CUSTOMS_HS_CODE = '0505100000';
 export const CUSTOMS_HS_NOTE =

@@ -11,6 +11,7 @@
 - **네이버 쇼핑 트렌드** — 구스이불·구스베개·구스토퍼 상품 캐러셀 + 가격분포
 - **네이버 쇼핑 인사이트** — 키워드별 월별 클릭 트렌드 + 기기별·성별·연령별 분포 (데이터랩 API)
 - **SNS 인사이트** — 유튜브 최신 컨텐츠(YouTube Data API v3) + 네이버 쇼핑라이브 이불 검색 (iframe)
+- **실험실** — 부산 숙박시설 현황 (네이버 지도 + 건축HUB API)
 - **의견 보내기** — SQLite(Turso) 저장
 
 ## 환경변수
@@ -21,9 +22,9 @@
 # JWT 서명 시크릿 (필수)
 JWT_SECRET=your-secret-key
 
-# 관세청 공공데이터 API (선택 — 없으면 수입통계 섹션 비활성)
-# 발급: https://www.data.go.kr/data/15101609/openapi.do
-CUSTOMS_API_KEY=
+# 공공데이터포털 API 키 — 관세청 수입통계 + 건축HUB (선택)
+# 발급: https://www.data.go.kr → 일반 인증키 (Decoding) 사용
+OPEN_API_KEY=
 
 # 네이버 검색/쇼핑/데이터랩 API (선택 — 없으면 뉴스·쇼핑·인사이트 섹션 비활성)
 # 발급: https://developers.naver.com/apps
@@ -34,6 +35,10 @@ NAVER_CLIENT_SECRET=
 # YouTube Data API v3 (선택 — 없으면 SNS인사이트 유튜브 섹션 비활성)
 # 발급: https://console.cloud.google.com → YouTube Data API v3 활성화
 YOUTUBE_API_KEY=
+
+# 네이버 지도 (실험실용, 선택)
+# 발급: https://www.ncloud.com → AI·NAVER API → Maps
+NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=
 
 # Turso DB (선택 — 없으면 로컬 SQLite 파일 사용)
 # 발급: https://turso.tech
@@ -67,6 +72,7 @@ Vercel에 연결 후 위 환경변수를 동일하게 추가하면 됩니다.
 | 네이버 데이터랩 쇼핑인사이트 API | 키워드 클릭 트렌드·기기·성별·연령별 | 1시간 캐시 |
 | YouTube Data API v3 | 구스이불 관련 채널 최신 영상 목록 | 1시간 캐시 |
 | 네이버 쇼핑라이브 | 이불 카테고리 최신 라이브 목록 (iframe) | 실시간 |
+| [건축HUB data.go.kr](https://www.data.go.kr/data/15101609/openapi.do) | 부산 숙박시설 건축인허가 현황 | 일 1회 캐시 |
 
 ---
 

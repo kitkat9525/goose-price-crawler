@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { BuildingPermitItem } from '@/types/building';
 import { fetchAll, delay } from '@/app/lib/building-api';
-import { getLodgingCacheAll, getLodgingCacheByKey, setLodgingCacheRow } from '@/app/lib/db';
+import { getLodgingCacheAll, setLodgingCacheRow } from '@/app/lib/db';
 import bjdongData from '@/data/bjdong.json';
 import sigunguData from '@/data/sigungu.json';
 
