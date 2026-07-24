@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback, Fragment } from 'react';
 import Script from 'next/script';
 import Lottie from 'lottie-react';
-import mapLottie from '@/public/map-lottie.json';
 import { BuildingPermitItem } from '@/types/building';
 
 export interface LabClientProps { naverClientId: string }
@@ -84,6 +83,9 @@ const TH: React.CSSProperties = {
 
 const TABLE_HEADERS = ['#', '건물명', '주소', '주용도', '건축구분', '허가일', '승인일'];
 
+interface Progress { current: number; total: number; sigunguName: string; bjdongName: string }
+
+const SPIN_STYLE = `@keyframes spin { to { transform: rotate(360deg); } }`;
 
 export default function LabClient({ naverClientId }: LabClientProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -98,7 +100,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
   const [loading, setLoading] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState<{ current: number; total: number; sigunguName: string; bjdongName: string } | null>(null);
+  const [progress, setProgress] = useState<Progress | null>(null);
   const [mapZoom, setMapZoom] = useState(10);
 
   useEffect(() => { setExpandedIdx(null); }, [selected]);
@@ -301,7 +303,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#fff', color: '#111', fontFamily: 'inherit', overflow: 'hidden' }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{SPIN_STYLE}</style>
       <Script src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`} strategy="afterInteractive" onLoad={initMap} />
 
       <header style={{ borderBottom: '1px solid #ebebeb', padding: '16px 32px', flexShrink: 0 }}>
@@ -318,7 +320,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
 
       {loading && !error && (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-          <Lottie animationData={mapLottie} loop style={{ width: 80, height: 80 }} />
+          <Lottie path="/map-lottie.json" loop style={{ width: 80, height: 80 }} />
           {progress && (
             <p style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{progress.sigunguName} · {progress.bjdongName}</p>
           )}
