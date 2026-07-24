@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback, Fragment } from 'react';
 import Script from 'next/script';
+import Lottie from 'lottie-react';
+import mapLottie from '@/public/map-lottie.json';
 import { BuildingPermitItem } from '@/types/building';
 
 export interface LabClientProps { naverClientId: string }
@@ -82,27 +84,6 @@ const TH: React.CSSProperties = {
 
 const TABLE_HEADERS = ['#', '건물명', '주소', '주용도', '건축구분', '허가일', '승인일'];
 
-const R = 28;
-const CIRC = 2 * Math.PI * R;
-
-function CircularProgress({ pct, spinning }: { pct?: number; spinning?: boolean }) {
-  return (
-    <svg width={72} height={72} style={spinning ? { animation: 'spin 1s linear infinite' } : {}}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      <circle cx={36} cy={36} r={R} fill="none" stroke="#ebebeb" strokeWidth={3} />
-      <circle
-        cx={36} cy={36} r={R} fill="none"
-        stroke={KEY} strokeWidth={3}
-        strokeLinecap="round"
-        strokeDasharray={spinning ? `${CIRC * 0.25} ${CIRC * 0.75}` : `${CIRC * (pct ?? 0) / 100} ${CIRC}`}
-        transform="rotate(-90 36 36)"
-      />
-      {pct != null && !spinning && (
-        <text x={36} y={40} textAnchor="middle" fontSize={12} fontWeight={700} fill="#111">{pct}%</text>
-      )}
-    </svg>
-  );
-}
 
 export default function LabClient({ naverClientId }: LabClientProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -289,7 +270,6 @@ export default function LabClient({ naverClientId }: LabClientProps) {
   }, [groups, mapZoom, loadGroup]);
 
   const totalBuilding = groups.reduce((s, g) => s + g.count, 0);
-  const pct = progress ? Math.round((progress.current / progress.total) * 100) : 0;
 
   const renderRow = (item: BuildingPermitItem, idx: number, isOpen: boolean, onToggle: () => void) => (
     <Fragment key={idx}>
@@ -337,8 +317,8 @@ export default function LabClient({ naverClientId }: LabClientProps) {
       </header>
 
       {loading && !error && (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-          <CircularProgress pct={progress ? pct : undefined} spinning={!progress} />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <Lottie animationData={mapLottie} loop style={{ width: 80, height: 80 }} />
           {progress && (
             <p style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>{progress.sigunguName} · {progress.bjdongName}</p>
           )}
