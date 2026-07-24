@@ -9,6 +9,14 @@ export interface LabClientProps {
 }
 
 const KEY = '#AA8E5C';
+const SIGUNGU_ZOOM_THRESHOLD = 12;
+
+const SIGUNGU_NAME: Record<string, string> = {
+  '26110': '중구', '26140': '서구', '26170': '동구', '26200': '영도구',
+  '26230': '부산진구', '26260': '동래구', '26290': '남구', '26320': '북구',
+  '26350': '해운대구', '26380': '사하구', '26410': '금정구', '26440': '강서구',
+  '26470': '연제구', '26500': '수영구', '26530': '사상구', '26710': '기장군',
+};
 
 interface BjdongGroup {
   bjdongKey: string;
@@ -18,20 +26,21 @@ interface BjdongGroup {
   items: BuildingPermitItem[];
 }
 
-interface ProgressEvent {
+interface ProgressState {
   current: number;
   total: number;
   sigunguName: string;
   bjdongName: string;
 }
 
-const SIGUNGU_ZOOM_THRESHOLD = 12;
-
-const SIGUNGU_NAME: Record<string, string> = {
-  '26110': '중구', '26140': '서구', '26170': '동구', '26200': '영도구',
-  '26230': '부산진구', '26260': '동래구', '26290': '남구', '26320': '북구',
-  '26350': '해운대구', '26380': '사하구', '26410': '금정구', '26440': '강서구',
-  '26470': '연제구', '26500': '수영구', '26530': '사상구', '26710': '기장군',
+type NaverMaps = {
+  maps: {
+    Map: new (...a: unknown[]) => unknown;
+    Marker: new (...a: unknown[]) => { setMap: (m: unknown) => void };
+    LatLng: new (...a: unknown[]) => unknown;
+    Point: new (...a: unknown[]) => unknown;
+    Event: { addListener: (...a: unknown[]) => unknown };
+  };
 };
 
 const formatDate = (d: string) =>
@@ -79,6 +88,8 @@ const TH: React.CSSProperties = {
   paddingBottom: 8,
 };
 
+const TABLE_HEADERS = ['#', '건물명', '주소', '주용도', '건축구분', '허가일', '승인일'];
+
 export default function LabClient({ naverClientId }: LabClientProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<unknown>(null);
@@ -89,14 +100,13 @@ export default function LabClient({ naverClientId }: LabClientProps) {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState<ProgressEvent | null>(null);
+  const [progress, setProgress] = useState<ProgressState | null>(null);
   const [mapZoom, setMapZoom] = useState(10);
 
   useEffect(() => { setExpandedIdx(null); }, [selected]);
 
   useEffect(() => {
     let cancelled = false;
-
     (async () => {
       try {
         const coordsRes = await fetch('/busan-bjdong-coords.json').catch(() => null);
@@ -155,12 +165,11 @@ export default function LabClient({ naverClientId }: LabClientProps) {
         }
       }
     })();
-
     return () => { cancelled = true; };
   }, []);
 
   const initMap = useCallback(() => {
-    const naver = (window as unknown as { naver: { maps: { Map: new (...a: unknown[]) => unknown; LatLng: new (...a: unknown[]) => unknown; Marker: new (...a: unknown[]) => unknown; Point: new (...a: unknown[]) => unknown; Event: { addListener: (...a: unknown[]) => unknown } } } }).naver;
+    const naver = (window as unknown as { naver: NaverMaps }).naver;
     if (!naver || !mapContainerRef.current) return;
     const map = new naver.maps.Map(mapContainerRef.current, {
       center: new naver.maps.LatLng(35.18, 129.07),
@@ -174,7 +183,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
   }, []);
 
   useEffect(() => {
-    const naver = (window as unknown as { naver?: { maps: { Marker: new (...a: unknown[]) => { setMap: (m: unknown) => void }; LatLng: new (...a: unknown[]) => unknown; Point: new (...a: unknown[]) => unknown; Event: { addListener: (...a: unknown[]) => unknown } } } }).naver;
+    const naver = (window as unknown as { naver?: NaverMaps }).naver;
     if (!naver || !mapRef.current || groups.length === 0) return;
 
     markersRef.current.forEach((m) => (m as { setMap: (v: null) => void }).setMap(null));
@@ -184,10 +193,8 @@ export default function LabClient({ naverClientId }: LabClientProps) {
 
     const addMarker = (lat: number, lng: number, count: number, label: string, onClick: () => void) => {
       const digits = String(count).length;
-      // 줌 단계별 베이스 크기: 낮은 줌(전체보기)일수록 작게, 줌인할수록 커짐
       const base = mapZoom >= 14 ? 32 : mapZoom >= 12 ? 28 : mapZoom >= 11 ? 34 : 28;
-      const increment = mapZoom < 12 ? 5 : 4;
-      const size = base + (digits - 1) * increment;
+      const size = base + (digits - 1) * (mapZoom < 12 ? 5 : 4);
       const fs = Math.round(size * 0.33);
       const marker = new naver.maps.Marker({
         position: new naver.maps.LatLng(lat, lng),
@@ -218,8 +225,8 @@ export default function LabClient({ naverClientId }: LabClientProps) {
         });
       });
     } else {
-      groups.forEach((group) => {
-        addMarker(group.lat, group.lng, group.items.length, group.name, () => setSelected(group));
+      groups.forEach((g) => {
+        addMarker(g.lat, g.lng, g.items.length, g.name, () => setSelected(g));
       });
     }
   }, [groups, mapZoom]);
@@ -233,27 +240,23 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     return [...all].sort(() => Math.random() - 0.5).slice(0, 1000);
   }, [groups]);
 
-  const tableHeaders = ['#', '건물명', '주소', '주용도', '건축구분', '대지(㎡)', '건축(㎡)', '허가일', '승인일'];
   const renderRow = (item: BuildingPermitItem, idx: number, clickable = false, isOpen = false, onToggle?: () => void) => (
     <Fragment key={idx}>
       <tr
         onClick={clickable ? onToggle : undefined}
-        style={{ borderBottom: '1px solid #ebebeb', cursor: clickable ? 'pointer' : 'default',
-          background: isOpen ? '#fafafa' : 'transparent' }}
+        style={{ borderBottom: '1px solid #ebebeb', cursor: clickable ? 'pointer' : 'default', background: isOpen ? '#fafafa' : 'transparent' }}
       >
         <td style={{ ...CELL, color: 'rgba(17,17,17,0.3)', width: 32 }}>{idx + 1}</td>
         <td style={{ ...CELL, fontWeight: 700, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.bldNm || '—'}</td>
         <td style={{ ...CELL, color: 'rgba(17,17,17,0.55)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.platPlc || '—'}</td>
         <td style={{ ...CELL, whiteSpace: 'nowrap' }}>{item.mainPurpsCdNm || '—'}</td>
         <td style={{ ...CELL, whiteSpace: 'nowrap', color: 'rgba(17,17,17,0.55)' }}>{item.archGbCdNm || '—'}</td>
-        <td style={{ ...CELL, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNum(item.platArea)}</td>
-        <td style={{ ...CELL, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNum(item.archArea)}</td>
         <td style={{ ...CELL, textAlign: 'center', color: 'rgba(17,17,17,0.55)' }}>{formatDate(item.archPmsDay)}</td>
         <td style={{ ...CELL, textAlign: 'center', color: 'rgba(17,17,17,0.55)' }}>{formatDate(item.useAprDay)}</td>
       </tr>
       {isOpen && (
         <tr style={{ background: '#fafafa', borderBottom: '1px solid #ebebeb' }}>
-          <td colSpan={9} style={{ padding: '16px 0 16px 32px' }}>
+          <td colSpan={7} style={{ padding: '16px 0 16px 32px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 32px' }}>
               {getItemFields(item).map(([label, val]) => (
                 <div key={label} style={{ display: 'flex', gap: 8, fontSize: 11 }}>
@@ -276,7 +279,6 @@ export default function LabClient({ naverClientId }: LabClientProps) {
         onLoad={initMap}
       />
 
-      {/* 헤더 */}
       <header style={{ borderBottom: '1px solid #ebebeb', padding: '16px 32px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexShrink: 0 }}>
         <div>
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'rgba(17,17,17,0.3)', textTransform: 'uppercase', marginBottom: 4 }}>LAB · 실험실</p>
@@ -290,7 +292,6 @@ export default function LabClient({ naverClientId }: LabClientProps) {
       </header>
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* 지도 */}
         <div ref={mapContainerRef} style={{ width: '50%', borderRight: '1px solid #ebebeb', flexShrink: 0, position: 'relative' }}>
           {loading && (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.92)', zIndex: 10, gap: 12, padding: '0 40px' }}>
@@ -314,7 +315,6 @@ export default function LabClient({ naverClientId }: LabClientProps) {
           )}
         </div>
 
-        {/* 목록 */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px 32px' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
             {selected ? (
@@ -337,20 +337,15 @@ export default function LabClient({ naverClientId }: LabClientProps) {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
               <thead>
                 <tr>
-                  {tableHeaders.map((h) => (
-                    <th key={h} style={{ ...TH, textAlign: h === '대지(㎡)' || h === '건축(㎡)' ? 'right' : h === '허가일' || h === '승인일' ? 'center' : 'left' }}>{h}</th>
+                  {TABLE_HEADERS.map((h) => (
+                    <th key={h} style={{ ...TH, textAlign: h === '허가일' || h === '승인일' ? 'center' : 'left' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {selected
-                  ? selected.items.map((item, idx) =>
-                      renderRow(item, idx, true, expandedIdx === idx, () => setExpandedIdx(expandedIdx === idx ? null : idx))
-                    )
-                  : randomSample.map((item, idx) =>
-                      renderRow(item, idx, true, expandedIdx === idx, () => setExpandedIdx(expandedIdx === idx ? null : idx))
-                    )
-                }
+                {(selected ? selected.items : randomSample).map((item, idx) =>
+                  renderRow(item, idx, true, expandedIdx === idx, () => setExpandedIdx(expandedIdx === idx ? null : idx))
+                )}
               </tbody>
             </table>
           </div>
