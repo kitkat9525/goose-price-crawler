@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BuildingPermitItem } from '@/types/building';
 import { fetchAll, delay } from '@/app/lib/building-api';
-import { getLodgingCacheAll, setLodgingCacheRow } from '@/app/lib/db';
+import { getBuildingCacheAll, setBuildingCacheRow } from '@/app/lib/db';
 import { BUSAN_SIGUNGU, todayStr } from '@/app/lib/busan';
 import bjdongData from '@/data/bjdong.json';
 
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'OPEN_API_KEY 없음' }, { status: 500 });
   }
 
-  const cached = await getLodgingCacheAll();
+  const cached = await getBuildingCacheAll();
   const cachedMap = new Map(cached.map((r) => [r.bjdongKey, r]));
   const bjdongMap = bjdongData as Record<string, { c: string; n: string }[]>;
   const today = todayStr();
@@ -41,11 +41,11 @@ export async function GET(request: NextRequest) {
   for (const { sigunguCd, bjdongCd } of toFetch) {
     try {
       const items = await fetchAll(serviceKey, sigunguCd, bjdongCd);
-      const lodging = items.filter((item: BuildingPermitItem) => item.mainPurpsCd === '15000');
-      await setLodgingCacheRow(sigunguCd + bjdongCd, today, lodging);
+      const filtered = items.filter((item: BuildingPermitItem) => item.mainPurpsCd === '15000');
+      await setBuildingCacheRow(sigunguCd + bjdongCd, today, filtered);
       fetched++;
     } catch (err) {
-      console.error(`[cron/refresh-lodging] ${sigunguCd}/${bjdongCd}:`, err);
+      console.error(`[cron/refresh-building] ${sigunguCd}/${bjdongCd}:`, err);
       errors++;
     }
     await delay(150);

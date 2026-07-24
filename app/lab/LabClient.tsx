@@ -103,7 +103,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
         const coords: Record<string, { lat: number; lng: number; name: string }> =
           coordsRes ? await coordsRes.json() : {};
 
-        const res = await fetch('/api/busan-lodging');
+        const res = await fetch('/api/building');
         const reader = res.body!.getReader();
         const decoder = new TextDecoder();
         let buf = '';
@@ -125,7 +125,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
               setProgress(data);
             } else if (event === 'done') {
               const map = new Map<string, BjdongGroup>();
-              for (const item of data.data as BuildingPermitItem[]) {
+              for (const item of (data.data ?? []) as BuildingPermitItem[]) {
                 const key = item.sigunguCd + item.bjdongCd;
                 if (!map.has(key)) {
                   const coord = coords[key];
@@ -224,7 +224,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
     }
   }, [groups, mapZoom]);
 
-  const totalLodging = groups.reduce((s, g) => s + g.items.length, 0);
+  const totalBuilding = groups.reduce((s, g) => s + g.items.length, 0);
   const pct = progress ? Math.round((progress.current / progress.total) * 100) : 0;
 
   const randomSample = useMemo(() => {
@@ -284,7 +284,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
         </div>
         {!loading && !error && (
           <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>
-            숙박시설 <strong style={{ color: '#111' }}>{formatNum(totalLodging)}</strong>건
+            숙박시설 <strong style={{ color: '#111' }}>{formatNum(totalBuilding)}</strong>건
           </span>
         )}
       </header>

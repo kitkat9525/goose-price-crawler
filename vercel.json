@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/cron/refresh-lodging",
+      "path": "/api/cron/refresh-building",
       "schedule": "0 15 * * *"
     }
   ]

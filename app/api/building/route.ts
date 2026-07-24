@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { BuildingPermitItem } from '@/types/building';
 import { fetchAll, delay } from '@/app/lib/building-api';
-import { getLodgingCacheAll, setLodgingCacheRow } from '@/app/lib/db';
+import { getBuildingCacheAll, setBuildingCacheRow } from '@/app/lib/db';
 import { BUSAN_SIGUNGU, SIGUNGU_NAME, todayStr } from '@/app/lib/busan';
 import bjdongData from '@/data/bjdong.json';
 
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
   const stream = new ReadableStream({
     async start(controller) {
-      const cached = await getLodgingCacheAll();
+      const cached = await getBuildingCacheAll();
       const cachedMap = new Map(cached.map((r) => [r.bjdongKey, r]));
       const bjdongMap = bjdongData as Record<string, { c: string; n: string }[]>;
 
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
       if (toFetch.length === 0) {
         const allItems = cached.flatMap((r) => r.data as BuildingPermitItem[]);
-        controller.enqueue(sse('done', { fromCache: true, totalLodging: allItems.length, data: allItems }));
+        controller.enqueue(sse('done', { fromCache: true, total: allItems.length, data: allItems }));
         controller.close();
         return;
       }
@@ -57,18 +57,18 @@ export async function GET(request: NextRequest) {
         controller.enqueue(sse('progress', { current, total, sigunguName, bjdongName }));
         try {
           const items = await fetchAll(serviceKey, sigunguCd, bjdongCd);
-          const lodging = items.filter((item) => item.mainPurpsCd === '15000');
+          const filtered = items.filter((item) => item.mainPurpsCd === '15000');
           const key = sigunguCd + bjdongCd;
-          await setLodgingCacheRow(key, today, lodging);
-          cachedMap.set(key, { bjdongKey: key, cachedAt: today, data: lodging });
+          await setBuildingCacheRow(key, today, filtered);
+          cachedMap.set(key, { bjdongKey: key, cachedAt: today, data: filtered });
         } catch (err) {
-          console.error(`[busan-lodging] ${sigunguCd}/${bjdongCd}:`, err);
+          console.error(`[api/building] ${sigunguCd}/${bjdongCd}:`, err);
         }
         await delay(150);
       }
 
       const allItems = Array.from(cachedMap.values()).flatMap((r) => r.data as BuildingPermitItem[]);
-      controller.enqueue(sse('done', { fromCache: false, totalLodging: allItems.length, data: allItems }));
+      controller.enqueue(sse('done', { fromCache: false, total: allItems.length, data: allItems }));
       controller.close();
     },
   });

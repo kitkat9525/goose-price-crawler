@@ -51,7 +51,7 @@ async function initDb() {
   `);
 
   await db.execute(`
-    CREATE TABLE IF NOT EXISTS busan_lodging_cache (
+    CREATE TABLE IF NOT EXISTS building_cache (
       bjdong_key TEXT PRIMARY KEY,
       cached_at  TEXT NOT NULL,
       data       TEXT NOT NULL
@@ -116,10 +116,10 @@ export async function getAllFeedbacks() {
 
 // ── 부산 숙박시설 캐시 ────────────────────────────────────────────────────────
 
-export async function getLodgingCacheAll(): Promise<{ bjdongKey: string; cachedAt: string; data: unknown[] }[]> {
+export async function getBuildingCacheAll(): Promise<{ bjdongKey: string; cachedAt: string; data: unknown[] }[]> {
   await initDb();
   const db = getClient();
-  const result = await db.execute(`SELECT bjdong_key, cached_at, data FROM busan_lodging_cache`);
+  const result = await db.execute(`SELECT bjdong_key, cached_at, data FROM building_cache`);
   return result.rows.map((r) => ({
     bjdongKey: r.bjdong_key as string,
     cachedAt: r.cached_at as string,
@@ -127,11 +127,11 @@ export async function getLodgingCacheAll(): Promise<{ bjdongKey: string; cachedA
   }));
 }
 
-export async function setLodgingCacheRow(bjdongKey: string, cachedAt: string, data: unknown[]) {
+export async function setBuildingCacheRow(bjdongKey: string, cachedAt: string, data: unknown[]) {
   await initDb();
   const db = getClient();
   await db.execute({
-    sql: `INSERT OR REPLACE INTO busan_lodging_cache (bjdong_key, cached_at, data) VALUES (?, ?, ?)`,
+    sql: `INSERT OR REPLACE INTO building_cache (bjdong_key, cached_at, data) VALUES (?, ?, ?)`,
     args: [bjdongKey, cachedAt, JSON.stringify(data)],
   });
 }
