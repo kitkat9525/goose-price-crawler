@@ -75,22 +75,27 @@ export async function GET(request: NextRequest) {
 
       const total = toFetch.length;
       let current = 0;
+      const CONCURRENCY = 5;
 
-      for (const { sigunguCd, bjdongCd, sigunguName, bjdongName } of toFetch) {
-        current++;
-        controller.enqueue(sse('progress', { current, total, sigunguName, bjdongName }));
+      for (let i = 0; i < toFetch.length; i += CONCURRENCY) {
+        const batch = toFetch.slice(i, i + CONCURRENCY);
 
-        try {
-          const items = await fetchAll(serviceKey, sigunguCd, bjdongCd);
-          const lodging = items.filter((item) => item.mainPurpsCd === '15000');
-          const key = sigunguCd + bjdongCd;
-          await setLodgingCacheRow(key, today(), lodging);
-          cachedMap.set(key, { bjdongKey: key, cachedAt: today(), data: lodging });
-        } catch (err) {
-          console.error(`[${sigunguCd}/${bjdongCd}] 오류:`, err);
-        }
+        await Promise.all(batch.map(async ({ sigunguCd, bjdongCd, sigunguName, bjdongName }) => {
+          const idx = ++current;
+          controller.enqueue(sse('progress', { current: idx, total, sigunguName, bjdongName }));
 
-        await delay(150);
+          try {
+            const items = await fetchAll(serviceKey, sigunguCd, bjdongCd);
+            const lodging = items.filter((item) => item.mainPurpsCd === '15000');
+            const key = sigunguCd + bjdongCd;
+            await setLodgingCacheRow(key, today(), lodging);
+            cachedMap.set(key, { bjdongKey: key, cachedAt: today(), data: lodging });
+          } catch (err) {
+            console.error(`[${sigunguCd}/${bjdongCd}] 오류:`, err);
+          }
+        }));
+
+        await delay(50);
       }
 
       const allItems = Array.from(cachedMap.values()).flatMap((r) => r.data as BuildingPermitItem[]);
