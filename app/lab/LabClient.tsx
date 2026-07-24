@@ -278,7 +278,7 @@ export default function LabClient({ naverClientId }: LabClientProps) {
       <header style={{ borderBottom: '1px solid #ebebeb', padding: '16px 32px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexShrink: 0 }}>
         <div>
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'rgba(17,17,17,0.3)', textTransform: 'uppercase', marginBottom: 4 }}>LAB · 실험실</p>
-          <h1 style={{ fontSize: 20, fontWeight: 900, letterSpacing: -0.5, color: '#111' }}>부산 숙박시설 현황</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 900, letterSpacing: -0.5, color: '#111' }}>구초 대동여지도</h1>
         </div>
         {!loading && !error && (
           <span style={{ fontSize: 11, color: 'rgba(17,17,17,0.4)' }}>
